@@ -9,16 +9,21 @@ import Slider from '@react-native-community/slider';
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const LANGUAGES = [
-  'English', 'Spanish', 'French', 'German', 'Chinese', 'Japanese', 'Korean', 'Hindi', 
-  'Portuguese', 'Russian', 'Italian', 'Arabic', 'Turkish', 'Dutch', 'Polish', 'Swedish', 
-  'Indonesian', 'Vietnamese', 'Thai', 'Greek'
+  'English (US)', 'English (UK)', 'Hindi', 'Spanish', 'French', 'German', 'Chinese (Mandarin)', 
+  'Japanese', 'Korean', 'Arabic', 'Portuguese', 'Russian', 'Italian', 'Turkish', 'Dutch', 
+  'Polish', 'Swedish', 'Indonesian', 'Vietnamese', 'Thai', 'Greek', 'Bengali', 'Marathi', 
+  'Telugu', 'Tamil', 'Gujarati', 'Urdu', 'Kannada', 'Malayalam', 'Punjabi', 'Persian', 
+  'Hebrew', 'Ukrainian', 'Czech', 'Danish', 'Finnish', 'Norwegian', 'Hungarian', 'Romanian'
 ];
 
 const CATEGORIES = [
   'Story Telling', 'Book Reading', 'Novel Reading', 'Educational', 'News Report', 
   'Interview', 'Comedy', 'True Crime', 'Tech & Science', 'Business', 'Wellness', 
   'Travel', 'Sports', 'History', 'Philosophy', 'Kids & Family', 'Arts', 'Music & Media', 
-  'Political', 'Spiritual'
+  'Political', 'Spiritual', 'Documentary', 'Personal Journal', 'Meditative', 'ASMR', 
+  'Horror', 'Drama', 'Biography', 'Self-Improvement', 'Health & Fitness', 'Food & Cooking', 
+  'Gardening', 'Parenting', 'Relationship Advice', 'Finance', 'Real Estate', 'Law', 
+  'Mythology', 'Gaming', 'Movie Reviews', 'Anime', 'AI & Future', 'Entrepreneurship'
 ];
 
 const VOICES = [
@@ -36,7 +41,7 @@ export default function StartPodcastScreen() {
   const [selectedVoice, setSelectedVoice] = useState(VOICES[0]);
   const [summaryWords, setSummaryWords] = useState(500);
   const [voiceSpeed, setVoiceSpeed] = useState(1.0);
-  const [selectedLanguage, setSelectedLanguage] = useState('English');
+  const [selectedLanguage, setSelectedLanguage] = useState('English (US)');
   const [selectedCategory, setSelectedCategory] = useState('Story Telling');
 
   return (
@@ -57,7 +62,7 @@ export default function StartPodcastScreen() {
 
           <Text style={styles.instruction}>Upload a file or paste your script below to get started.</Text>
 
-          {/* Upload Method Toggle / Instructions */}
+          {/* Large Upload Card (Digital Atoll Style) */}
           <TouchableOpacity style={styles.uploadCard}>
             <View style={styles.dashContainer}>
               <View style={styles.uploadIconContainer}>
@@ -195,17 +200,6 @@ export default function StartPodcastScreen() {
                             <Text style={styles.pickerText}>{selectedCategory}</Text>
                             <Ionicons name="chevron-expand" size={20} color={Colors.light.primary} />
                         </TouchableOpacity>
-
-                        {/* Toggle Options (From references) */}
-                        <View style={styles.optionRow}>
-                             <View style={styles.optionInfo}>
-                                <Ionicons name="language-outline" size={20} color={Colors.light.primary} />
-                                <Text style={styles.optionLabel}>Multi-Language Support</Text>
-                             </View>
-                             <TouchableOpacity style={styles.toggleActive}>
-                                <View style={styles.toggleCircle} />
-                             </TouchableOpacity>
-                        </View>
 
                         <TouchableOpacity style={styles.startGenerationButton}>
                             <LinearGradient
@@ -454,48 +448,13 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.light.onSurfaceVariant,
   },
-  optionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: Colors.light.surfaceContainerLow,
-    padding: 16,
-    borderRadius: 16,
-    marginBottom: 32,
-    marginTop: 10,
-  },
-  optionInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  optionLabel: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 14,
-    color: Colors.light.onSurface,
-    marginLeft: 12,
-  },
-  toggleActive: {
-    width: 50,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: Colors.light.primary,
-    justifyContent: 'center',
-    paddingHorizontal: 2,
-  },
-  toggleCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: 'white',
-    alignSelf: 'flex-end',
-  },
   startGenerationButton: {
     shadowColor: Colors.light.primary,
     shadowOffset: { width: 0, height: 16 },
     shadowOpacity: 0.2,
     shadowRadius: 32,
     elevation: 8,
-    marginBottom: 20,
+    marginVertical: 20,
   },
   startGenerationGradient: {
     paddingVertical: 18,
