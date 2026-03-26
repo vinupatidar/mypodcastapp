@@ -117,21 +117,6 @@ export default function GeneratingAudioScreen() {
                     </View>
                 </View>
             </View>
-
-            {/* Control Actions (At bottom of scroll content) */}
-            <View style={styles.controls}>
-                <ControlItem icon="square" label="STOP" />
-                <TouchableOpacity style={styles.pauseButton}>
-                    <LinearGradient
-                        colors={Colors.light.signatureGradient}
-                        style={styles.pauseGradient}
-                    >
-                        <Ionicons name="pause" size={32} color="white" />
-                    </LinearGradient>
-                    <Text style={styles.pauseLabel}>PAUSE</Text>
-                </TouchableOpacity>
-                <ControlItem icon="download-outline" label="DOWNLOAD" />
-            </View>
         </View>
       </ScrollView>
 
@@ -145,22 +130,11 @@ export default function GeneratingAudioScreen() {
   );
 }
 
-function ControlItem({ icon, label }: any) {
-    return (
-        <View style={styles.controlItemWrapper}>
-            <TouchableOpacity style={styles.controlItem}>
-                <Ionicons name={icon} size={24} color="#d12e2e" />
-            </TouchableOpacity>
-            <Text style={styles.controlLabel}>{label}</Text>
-        </View>
-    )
-}
-
 function TabItem({ icon, label, active }: any) {
     return (
         <TouchableOpacity style={styles.tabItem}>
             <Ionicons 
-                name={icon + (active ? "" : "-outline")} 
+                name={icon + (active ? "" : "-outline") as any} 
                 size={22} 
                 color={active ? Colors.light.primary : Colors.light.onSurfaceVariant} 
             />
@@ -348,52 +322,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_400Regular',
     fontSize: 14,
     color: Colors.light.onSurfaceVariant,
-  },
-  controls: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: '100%',
-    paddingHorizontal: 20,
-    marginBottom: 20,
-  },
-  controlItemWrapper: {
-    alignItems: 'center',
-  },
-  controlItem: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: 'rgba(238, 237, 243, 0.8)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  controlLabel: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 10,
-    color: Colors.light.onSurfaceVariant,
-  },
-  pauseButton: {
-    alignItems: 'center',
-  },
-  pauseGradient: {
-    width: 76,
-    height: 76,
-    borderRadius: 38,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-    shadowColor: Colors.light.primary,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.2,
-    shadowRadius: 16,
-    elevation: 6,
-  },
-  pauseLabel: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 10,
-    color: Colors.light.primary,
   },
   tabBar: {
     position: 'absolute',
