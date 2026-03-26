@@ -203,7 +203,13 @@ export default function StartPodcastScreen() {
                             <Ionicons name="chevron-expand" size={20} color={Colors.light.primary} />
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.startGenerationButton}>
+                        <TouchableOpacity 
+                            style={styles.startGenerationButton}
+                            onPress={() => {
+                                setShowOptions(false);
+                                router.push('/generating-audio');
+                            }}
+                        >
                             <LinearGradient
                                 colors={Colors.light.signatureGradient}
                                 start={{ x: 0, y: 0 }}
@@ -275,6 +281,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 12,
+  },
+  backButton: {
+    padding: 8,
   },
   headerTitle: {
     fontFamily: 'Inter_700Bold',
@@ -383,6 +392,13 @@ const styles = StyleSheet.create({
     bottom: 40,
     left: 24,
     right: 24,
+  },
+  generateButtonContainer: {
+    shadowColor: Colors.light.primary,
+    shadowOffset: { width: 0, height: 16 },
+    shadowOpacity: 0.2,
+    shadowRadius: 32,
+    elevation: 8,
   },
   generateButton: {
     flexDirection: 'row',
