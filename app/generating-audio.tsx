@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, Dimensions, Animated, Easing, ScrollView, Modal, FlatList } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, Dimensions, Animated, Easing, ScrollView, Modal, FlatList, Pressable } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
@@ -47,10 +47,9 @@ export default function GeneratingAudioScreen() {
   const [selectedLanguage, setSelectedLanguage] = useState('English (US)');
   const [selectedCategory, setSelectedCategory] = useState('Story Telling');
 
-  const [generationKey, setGenerationKey] = useState(0); // For resetting visualization pulse if needed
+  const [generationKey, setGenerationKey] = useState(0);
 
   useEffect(() => {
-    // Waveform Pulsing Animation
     Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, {
@@ -83,8 +82,7 @@ export default function GeneratingAudioScreen() {
 
   const startNewGeneration = () => {
     setShowOptions(false);
-    setGenerationKey(prev => prev + 1); // Trigger refresh pulse
-    // Mock update: change summary preview slightly if needed
+    setGenerationKey(prev => prev + 1);
   };
 
   const currentPickerData = 
@@ -93,91 +91,100 @@ export default function GeneratingAudioScreen() {
     VOICES.map(v => v.name);
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Navigation Header */}
-      <View style={styles.navHeader}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color={Colors.light.primary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>VoiceAI</Text>
-        <TouchableOpacity style={styles.profileButtonMini}>
-          <Image 
-            source="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=100" 
-            style={styles.profileImage}
-          />
-        </TouchableOpacity>
-      </View>
-
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={styles.content} key={generationKey}>
-            {/* Status Badge */}
-            <View style={styles.badge}>
-                <Text style={styles.badgeText}>GENERATING AUDIO</Text>
-            </View>
-
-            {/* Waveform Visualization */}
-            <View style={styles.vizWrapper}>
-                <View style={styles.outerCircle}>
-                    <View style={styles.innerCircle}>
-                        <Animated.View style={[styles.waveformContainer, { transform: [{ scale: pulseAnim }] }]}>
-                            <View style={[styles.wave, { height: 40, opacity: 0.4 }]} />
-                            <View style={[styles.wave, { height: 60, opacity: 0.6 }]} />
-                            <View style={[styles.wave, { height: 80, opacity: 1, backgroundColor: Colors.light.primary }]} />
-                            <View style={[styles.wave, { height: 100, opacity: 1, backgroundColor: Colors.light.primary }]} />
-                            <View style={[styles.wave, { height: 80, opacity: 1, backgroundColor: Colors.light.primary }]} />
-                            <View style={[styles.wave, { height: 60, opacity: 0.6 }]} />
-                            <View style={[styles.wave, { height: 40, opacity: 0.4 }]} />
-                        </Animated.View>
-                        <Ionicons name="mic" size={20} color={Colors.light.primary} style={styles.micIcon} />
-                        <Text style={styles.vizLabel}>VOICE SYNTHESIS</Text>
-                    </View>
-                </View>
-            </View>
-
-            {/* Quick Actions */}
-            <View style={styles.quickActions}>
-                <TouchableOpacity style={styles.quickActionButton}>
-                    <LinearGradient
-                        colors={Colors.light.signatureGradient}
-                        style={styles.quickActionGradient}
-                    >
-                        <Ionicons name="pause" size={24} color="white" />
-                    </LinearGradient>
-                    <Text style={styles.quickActionLabel}>PAUSE</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.quickActionButton} onPress={() => setShowOptions(true)}>
-                    <LinearGradient
-                        colors={Colors.light.signatureGradient}
-                        style={styles.quickActionGradient}
-                    >
-                        <Ionicons name="refresh" size={24} color="white" />
-                    </LinearGradient>
-                    <Text style={styles.quickActionLabel}>REGENERATE</Text>
-                </TouchableOpacity>
-            </View>
-
-            {/* Summary Preview Section */}
-            <View style={styles.previewSection}>
-                <Text style={styles.sectionTitle}>Summary Preview</Text>
-                <View style={styles.previewCard}>
-                    <Text style={styles.previewContent}>
-                        The latest research into neural voice synthesis suggests that emotional cadence can now be mapped with over 98% accuracy. 
-                        This generation session is applying a <Text style={styles.highlight}>{selectedVoice.name.split(' — ')[0]}</Text> tone with subtle emphasis on key technical breakthroughs. 
-                        The resulting audio will maintain a consistent atmospheric depth suitable for high-end editorial presentations. {'\n'}{'\n'}
-                        Our advanced summary engine is extracting the key pillars of your content to ensure a high-authority delivery. Feel free to pause and download the clip below.
-                    </Text>
-                    
-                    <View style={styles.processingBar}>
-                        <View style={styles.tokenCircle} />
-                        <Text style={styles.processingText}>Processing {summaryWords} words in {selectedLanguage}...</Text>
-                    </View>
-                </View>
-            </View>
+    <View style={styles.masterContainer}>
+      <SafeAreaView style={styles.container}>
+        {/* Navigation Header */}
+        <View style={styles.navHeader}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Ionicons name="chevron-back" size={24} color={Colors.light.primary} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>VoiceAI</Text>
+          <TouchableOpacity style={styles.profileButtonMini}>
+            <Image 
+              source="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=100" 
+              style={styles.profileImage}
+            />
+          </TouchableOpacity>
         </View>
-      </ScrollView>
 
-      {/* Generation Options Modal for Regeneration */}
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          <View style={styles.content} key={generationKey}>
+              <View style={styles.badge}>
+                  <Text style={styles.badgeText}>GENERATING AUDIO</Text>
+              </View>
+
+              <View style={styles.vizWrapper}>
+                  <View style={styles.outerCircle}>
+                      <View style={styles.innerCircle}>
+                          <Animated.View style={[styles.waveformContainer, { transform: [{ scale: pulseAnim }] }]}>
+                              <View style={[styles.wave, { height: 40, opacity: 0.4 }]} />
+                              <View style={[styles.wave, { height: 60, opacity: 0.6 }]} />
+                              <View style={[styles.wave, { height: 80, opacity: 1, backgroundColor: Colors.light.primary }]} />
+                              <View style={[styles.wave, { height: 100, opacity: 1, backgroundColor: Colors.light.primary }]} />
+                              <View style={[styles.wave, { height: 80, opacity: 1, backgroundColor: Colors.light.primary }]} />
+                              <View style={[styles.wave, { height: 60, opacity: 0.6 }]} />
+                              <View style={[styles.wave, { height: 40, opacity: 0.4 }]} />
+                          </Animated.View>
+                          <Ionicons name="mic" size={20} color={Colors.light.primary} style={styles.micIcon} />
+                          <Text style={styles.vizLabel}>VOICE SYNTHESIS</Text>
+                      </View>
+                  </View>
+              </View>
+
+              {/* Quick Actions (Pause and Regenerate) */}
+              <View style={styles.quickActions}>
+                  <TouchableOpacity style={styles.quickActionButton} activeOpacity={0.7}>
+                      <LinearGradient
+                          colors={Colors.light.signatureGradient}
+                          style={styles.quickActionGradient}
+                      >
+                          <Ionicons name="pause" size={24} color="white" />
+                      </LinearGradient>
+                      <Text style={styles.quickActionLabel}>PAUSE</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity 
+                    style={styles.quickActionButton} 
+                    onPress={() => setShowOptions(true)}
+                    activeOpacity={0.7}
+                  >
+                      <LinearGradient
+                          colors={Colors.light.signatureGradient}
+                          style={styles.quickActionGradient}
+                      >
+                          <Ionicons name="refresh" size={24} color="white" />
+                      </LinearGradient>
+                      <Text style={styles.quickActionLabel}>REGENERATE</Text>
+                  </TouchableOpacity>
+              </View>
+
+              <View style={styles.previewSection}>
+                  <Text style={styles.sectionTitle}>Summary Preview</Text>
+                  <View style={styles.previewCard}>
+                      <Text style={styles.previewContent}>
+                          The latest research into neural voice synthesis suggests that emotional cadence can now be mapped with over 98% accuracy. 
+                          This generation session is applying a <Text style={styles.highlight}>{selectedVoice.name.split(' — ')[0]}</Text> tone with subtle emphasis on key technical breakthroughs. 
+                          The resulting audio will maintain a consistent atmospheric depth suitable for high-end editorial presentations. {'\n'}{'\n'}
+                          Our advanced summary engine is extracting the key pillars of your content to ensure a high-authority delivery. Feel free to pause and download the clip below.
+                      </Text>
+                      
+                      <View style={styles.processingBar}>
+                          <View style={styles.tokenCircle} />
+                          <Text style={styles.processingText}>Processing {summaryWords} words in {selectedLanguage}...</Text>
+                      </View>
+                  </View>
+              </View>
+          </View>
+        </ScrollView>
+
+        <View style={styles.tabBar}>
+            <TabItem icon="home" label="HOME" />
+            <TabItem icon="mic" label="LIBRARY" active />
+            <TabItem icon="person" label="PROFILE" />
+        </View>
+      </SafeAreaView>
+
+      {/* MODALS */}
       <Modal
         visible={showOptions}
         animationType="slide"
@@ -267,7 +274,6 @@ export default function GeneratingAudioScreen() {
         </View>
       </Modal>
 
-      {/* Sub-Picker Modal for Selections */}
       <Modal
          visible={pickerVisible}
          animationType="fade"
@@ -304,14 +310,7 @@ export default function GeneratingAudioScreen() {
             </View>
         </View>
       </Modal>
-
-      {/* Bottom Navigation */}
-      <View style={styles.tabBar}>
-          <TabItem icon="home" label="HOME" />
-          <TabItem icon="mic" label="LIBRARY" active />
-          <TabItem icon="person" label="PROFILE" />
-      </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -329,9 +328,12 @@ function TabItem({ icon, label, active }: any) {
 }
 
 const styles = StyleSheet.create({
+  masterContainer: {
+    flex: 1,
+    backgroundColor: '#faf9fe',
+  },
   container: {
     flex: 1,
-    backgroundColor: '#faf9fe', 
   },
   scrollContent: {
     paddingBottom: 120,
@@ -437,10 +439,12 @@ const styles = StyleSheet.create({
       width: '100%',
       paddingHorizontal: 20,
       marginBottom: 32,
+      zIndex: 10, // Ensure it's interactive
   },
   quickActionButton: {
       alignItems: 'center',
       gap: 8,
+      padding: 4, // Increase touch area
   },
   quickActionGradient: {
       width: 56,
@@ -509,7 +513,7 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(26, 27, 31, 0.4)',
+    backgroundColor: 'rgba(26, 27, 31, 1)', // Darker overlay for focus
     justifyContent: 'flex-end',
   },
   dismissOverlay: {
