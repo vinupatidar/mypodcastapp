@@ -36,7 +36,7 @@ const VOICES = [
 
 /**
  * Main Home Dashboard for MyPodcast App
- * Now features the "Summarize Document" interface directly.
+ * Refined header and document summarization focus.
  */
 export default function HomeScreen() {
   const [text, setText] = useState('');
@@ -78,18 +78,12 @@ export default function HomeScreen() {
           {/* Header Section */}
           <View style={styles.header}>
             <View>
-              <Text style={styles.overline}>GOOD MORNING</Text>
+              <Text style={styles.userNameText}>Vinu Patidar</Text>
               <Text style={styles.title}>Summarize Your{'\n'}Document</Text>
             </View>
-            <TouchableOpacity style={styles.profileButton}>
-              <Image 
-                source="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=100" 
-                style={styles.profileImage}
-              />
-            </TouchableOpacity>
           </View>
 
-          {/* Summarize Interface (Moved from start-podcast) */}
+          {/* Summarize Interface */}
           <View style={styles.summarizeContainer}>
             <Text style={styles.instruction}>Upload a file or paste your script below to get started.</Text>
 
@@ -124,7 +118,6 @@ export default function HomeScreen() {
               <Text style={styles.wordCount}>{text.split(/\s+/).filter(w => w !== '').length} / 500 words</Text>
             </View>
 
-            {/* Generate Button Row */}
             <TouchableOpacity 
                 style={styles.generateButtonContainer} 
                 onPress={() => setShowOptions(true)}
@@ -311,38 +304,28 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 24,
-    paddingBottom: 120,
+    paddingBottom: 110,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'baseline',
-    marginBottom: 32,
+    marginBottom: 40, // More space before instruction
     marginTop: 10,
   },
-  overline: {
+  userNameText: {
     fontFamily: 'Inter_700Bold',
     fontSize: 10,
     color: Colors.light.onSurfaceVariant,
     letterSpacing: 2,
     marginBottom: 8,
+    textTransform: 'uppercase',
   },
   title: {
     fontFamily: 'Inter_700Bold',
     fontSize: 32,
     color: Colors.light.onSurface,
     lineHeight: 38,
-  },
-  profileButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: Colors.light.primaryContainer,
-    overflow: 'hidden',
-  },
-  profileImage: {
-    width: '100%',
-    height: '100%',
   },
   summarizeContainer: {
     gap: 0,
@@ -351,7 +334,8 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_400Regular',
     fontSize: 14,
     color: Colors.light.onSurfaceVariant,
-    marginBottom: 24,
+    marginBottom: 32, // More space before content cards
+    marginTop: -8, // Tweak alignment
   },
   uploadCard: {
     backgroundColor: 'white',
