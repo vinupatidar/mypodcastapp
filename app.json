@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "mypodcast",
-    "slug": "mypodcast",
+    "slug": "mypodcastapp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -43,6 +43,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "c7a5b94f-2ffb-465f-9f34-65f5e38a1d6a"
+      }
+    },
+    "owner": "mypodcast"
   }
 }
