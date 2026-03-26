@@ -36,7 +36,7 @@ const VOICES = [
 
 /**
  * Main Home Dashboard for MyPodcast App
- * Clean, user-centric header with refined labels.
+ * Swapped header order: User Name then Welcome Label.
  */
 export default function HomeScreen() {
   const [text, setText] = useState('');
@@ -78,8 +78,8 @@ export default function HomeScreen() {
           {/* Header Section */}
           <View style={styles.header}>
             <View>
-              <Text style={styles.headerWelcomeLabel}>LISTEN TO YOUR DOCUMENT SUMMARISE PODCAST</Text>
               <Text style={styles.userNameTitle}>Vinu Patidar</Text>
+              <Text style={styles.headerWelcomeLabel}>LISTEN TO YOUR DOCUMENT SUMMARISE PODCAST</Text>
             </View>
           </View>
 
@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: Colors.light.onSurfaceVariant,
     letterSpacing: 2,
-    marginBottom: 8,
+    marginTop: 8, // Added margin from name above
   },
   userNameTitle: {
     fontFamily: 'Inter_700Bold',
@@ -331,11 +331,11 @@ const styles = StyleSheet.create({
   },
   instruction: {
     fontFamily: 'Inter_400Regular',
-    fontSize: 16, // Increased from 14
+    fontSize: 16,
     color: Colors.light.onSurfaceVariant,
     marginBottom: 32,
     marginTop: -8,
-    lineHeight: 22, // Adjusted for better readability
+    lineHeight: 22,
   },
   uploadCard: {
     backgroundColor: 'white',
