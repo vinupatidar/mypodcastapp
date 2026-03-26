@@ -36,7 +36,7 @@ const VOICES = [
 
 /**
  * Main Home Dashboard for MyPodcast App
- * Refined header and document summarization focus.
+ * Clean, user-centric header with Document Summarization tools.
  */
 export default function HomeScreen() {
   const [text, setText] = useState('');
@@ -78,8 +78,8 @@ export default function HomeScreen() {
           {/* Header Section */}
           <View style={styles.header}>
             <View>
-              <Text style={styles.userNameText}>Vinu Patidar</Text>
-              <Text style={styles.title}>Summarize Your{'\n'}Document</Text>
+              <Text style={styles.headerWelcomeLabel}>LISTEN TO YOUR PODCASTS</Text>
+              <Text style={styles.userNameTitle}>Vinu Patidar</Text>
             </View>
           </View>
 
@@ -310,18 +310,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'baseline',
-    marginBottom: 40, // More space before instruction
+    marginBottom: 40,
     marginTop: 10,
   },
-  userNameText: {
+  headerWelcomeLabel: {
     fontFamily: 'Inter_700Bold',
     fontSize: 10,
     color: Colors.light.onSurfaceVariant,
     letterSpacing: 2,
     marginBottom: 8,
-    textTransform: 'uppercase',
   },
-  title: {
+  userNameTitle: {
     fontFamily: 'Inter_700Bold',
     fontSize: 32,
     color: Colors.light.onSurface,
@@ -334,8 +333,8 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_400Regular',
     fontSize: 14,
     color: Colors.light.onSurfaceVariant,
-    marginBottom: 32, // More space before content cards
-    marginTop: -8, // Tweak alignment
+    marginBottom: 32,
+    marginTop: -8,
   },
   uploadCard: {
     backgroundColor: 'white',
@@ -368,7 +367,7 @@ const styles = StyleSheet.create({
   },
   uploadTitle: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 20,
+    fontSize: 22, // Increased from 20
     color: Colors.light.onSurface,
     marginBottom: 8,
   },
