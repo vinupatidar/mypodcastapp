@@ -77,16 +77,28 @@ export default function GeneratingAudioScreen() {
                 </View>
             </View>
 
-            {/* Top Pause Control (As requested: New button after circle) */}
-            <TouchableOpacity style={styles.topPauseControl}>
-                <LinearGradient
-                    colors={Colors.light.signatureGradient}
-                    style={styles.topPauseGradient}
-                >
-                    <Ionicons name="pause" size={24} color="white" />
-                </LinearGradient>
-                <Text style={styles.topPauseLabel}>TAP TO PAUSE SENSE</Text>
-            </TouchableOpacity>
+            {/* Quick Actions (Pause and Regenerate as requested) */}
+            <View style={styles.quickActions}>
+                <TouchableOpacity style={styles.quickActionButton}>
+                    <LinearGradient
+                        colors={Colors.light.signatureGradient}
+                        style={styles.quickActionGradient}
+                    >
+                        <Ionicons name="pause" size={24} color="white" />
+                    </LinearGradient>
+                    <Text style={styles.quickActionLabel}>PAUSE</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.quickActionButton}>
+                    <LinearGradient
+                        colors={Colors.light.signatureGradient}
+                        style={styles.quickActionGradient}
+                    >
+                        <Ionicons name="refresh" size={24} color="white" />
+                    </LinearGradient>
+                    <Text style={styles.quickActionLabel}>REGENERATE</Text>
+                </TouchableOpacity>
+            </View>
 
             {/* Summary Preview Section */}
             <View style={styles.previewSection}>
@@ -166,7 +178,6 @@ const styles = StyleSheet.create({
     paddingBottom: 120, // Space for tab bar
   },
   content: {
-    flex: 1,
     paddingHorizontal: 24,
     alignItems: 'center',
   },
@@ -262,32 +273,33 @@ const styles = StyleSheet.create({
     color: Colors.light.onSurfaceVariant,
     letterSpacing: 1,
   },
-  topPauseControl: {
+  quickActions: {
       flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: 'white',
-      paddingVertical: 12,
-      paddingHorizontal: 24,
-      borderRadius: 16,
+      justifyContent: 'space-around',
+      width: '100%',
+      paddingHorizontal: 20,
       marginBottom: 32,
-      shadowColor: Colors.light.primary,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.05,
-      shadowRadius: 8,
-      elevation: 2,
   },
-  topPauseGradient: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
+  quickActionButton: {
+      alignItems: 'center',
+      gap: 8,
+  },
+  quickActionGradient: {
+      width: 56,
+      height: 56,
+      borderRadius: 28,
       justifyContent: 'center',
       alignItems: 'center',
-      marginRight: 16,
+      shadowColor: Colors.light.primary,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.1,
+      shadowRadius: 8,
+      elevation: 3,
   },
-  topPauseLabel: {
+  quickActionLabel: {
       fontFamily: 'Inter_700Bold',
-      fontSize: 12,
-      color: Colors.light.onSurface,
+      fontSize: 10,
+      color: Colors.light.primary,
       letterSpacing: 0.5,
   },
   previewSection: {
