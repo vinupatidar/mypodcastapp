@@ -7,6 +7,8 @@ import { Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 
+import { router } from 'expo-router';
+
 /**
  * Main Home Screen for MyPodcast App
  * Updated layout based on user feedback.
@@ -30,8 +32,8 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* New Podcast Button (Moved to Top as Primary CTA) */}
-        <TouchableOpacity style={styles.topAction}>
+        {/* New Podcast Button (Linked to start-podcast) */}
+        <TouchableOpacity style={styles.topAction} onPress={() => router.push('/start-podcast')}>
             <LinearGradient
                 colors={Colors.light.signatureGradient}
                 start={{ x: 0, y: 0 }}
