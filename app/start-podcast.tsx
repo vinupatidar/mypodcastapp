@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, TextInput, KeyboardAvoidingView, Platform, Modal, Dimensions } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, TextInput, KeyboardAvoidingView, Platform, Modal, Dimensions, FlatList } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import Slider from '@react-native-community/slider';
 
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const LANGUAGES = [
   'English (US)', 'English (UK)', 'Hindi', 'Spanish', 'French', 'German', 'Chinese (Mandarin)', 
@@ -37,12 +37,33 @@ export default function StartPodcastScreen() {
   const [text, setText] = useState('');
   const [showOptions, setShowOptions] = useState(false);
   
+  // Selection Modal State
+  const [pickerVisible, setPickerVisible] = useState(false);
+  const [pickerType, setPickerType] = useState<'language' | 'category' | 'voice'>('language');
+  
   // Generation Options State
   const [selectedVoice, setSelectedVoice] = useState(VOICES[0]);
   const [summaryWords, setSummaryWords] = useState(500);
   const [voiceSpeed, setVoiceSpeed] = useState(1.0);
   const [selectedLanguage, setSelectedLanguage] = useState('English (US)');
   const [selectedCategory, setSelectedCategory] = useState('Story Telling');
+
+  const openPicker = (type: 'language' | 'category' | 'voice') => {
+    setPickerType(type);
+    setPickerVisible(true);
+  };
+
+  const handleSelect = (item: any) => {
+    if (pickerType === 'language') setSelectedLanguage(item);
+    else if (pickerType === 'category') setSelectedCategory(item);
+    else if (pickerType === 'voice') setSelectedVoice(item);
+    setPickerVisible(false);
+  };
+
+  const currentPickerData = 
+    pickerType === 'language' ? LANGUAGES : 
+    pickerType === 'category' ? CATEGORIES : 
+    VOICES.map(v => v.name);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -62,7 +83,6 @@ export default function StartPodcastScreen() {
 
           <Text style={styles.instruction}>Upload a file or paste your script below to get started.</Text>
 
-          {/* Large Upload Card (Digital Atoll Style) */}
           <TouchableOpacity style={styles.uploadCard}>
             <View style={styles.dashContainer}>
               <View style={styles.uploadIconContainer}>
@@ -95,7 +115,6 @@ export default function StartPodcastScreen() {
           </View>
         </ScrollView>
 
-        {/* Generate Button (Sticky at Bottom) */}
         <View style={styles.bottomActions}>
           <TouchableOpacity 
             style={styles.generateButtonContainer} 
@@ -114,7 +133,7 @@ export default function StartPodcastScreen() {
         </View>
       </KeyboardAvoidingView>
 
-      {/* Generation Options Modal (Bottom Sheet Style) */}
+      {/* Generation Options Modal */}
       <Modal
         visible={showOptions}
         animationType="slide"
@@ -122,26 +141,20 @@ export default function StartPodcastScreen() {
         onRequestClose={() => setShowOptions(false)}
       >
         <View style={styles.modalOverlay}>
-            <TouchableOpacity 
-                style={styles.dismissOverlay} 
-                activeOpacity={1} 
-                onPress={() => setShowOptions(false)} 
-            />
+            <TouchableOpacity style={styles.dismissOverlay} activeOpacity={1} onPress={() => setShowOptions(false)} />
             <View style={styles.bottomSheet}>
                 <View style={styles.handle} />
-                <View style={styles.sheetContent}>
+                <View style={[styles.sheetContent, { maxHeight: SCREEN_HEIGHT * 0.7 }]}>
                     <Text style={styles.sheetTitle}>Generation Options</Text>
                     <Text style={styles.sheetSubtitle}>Customize how your AI voice summary is crafted.</Text>
                     
                     <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
-                        {/* Voice Selection */}
                         <Text style={styles.label}>VOICE OPTION</Text>
-                        <TouchableOpacity style={styles.pickerButton}>
+                        <TouchableOpacity style={styles.pickerButton} onPress={() => openPicker('voice')}>
                             <Text style={styles.pickerText}>{selectedVoice.name}</Text>
                             <Ionicons name="chevron-expand" size={20} color={Colors.light.primary} />
                         </TouchableOpacity>
 
-                        {/* Summary Length Slider */}
                         <View style={styles.sliderHeader}>
                             <Text style={styles.label}>SUMMARY LENGTH</Text>
                             <View style={styles.badge}>
@@ -159,12 +172,7 @@ export default function StartPodcastScreen() {
                             maximumTrackTintColor={Colors.light.surfaceContainerHigh}
                             thumbTintColor={Colors.light.primary}
                         />
-                        <View style={styles.sliderLabels}>
-                            <Text style={styles.sliderLabelText}>Short</Text>
-                            <Text style={styles.sliderLabelText}>Detailed</Text>
-                        </View>
 
-                        {/* Voice Speed Slider */}
                         <View style={styles.sliderHeader}>
                             <Text style={styles.label}>VOICE SPEED</Text>
                             <View style={styles.badge}>
@@ -182,21 +190,15 @@ export default function StartPodcastScreen() {
                             maximumTrackTintColor={Colors.light.surfaceContainerHigh}
                             thumbTintColor={Colors.light.primary}
                         />
-                         <View style={styles.sliderLabels}>
-                            <Text style={styles.sliderLabelText}>Slow</Text>
-                            <Text style={styles.sliderLabelText}>Fast</Text>
-                        </View>
 
-                        {/* Language Selector */}
                         <Text style={styles.label}>SELECT LANGUAGE</Text>
-                        <TouchableOpacity style={styles.pickerButton}>
+                        <TouchableOpacity style={styles.pickerButton} onPress={() => openPicker('language')}>
                             <Text style={styles.pickerText}>{selectedLanguage}</Text>
                             <Ionicons name="chevron-expand" size={20} color={Colors.light.primary} />
                         </TouchableOpacity>
 
-                        {/* Podcast Category */}
                         <Text style={styles.label}>PODCAST CATEGORY</Text>
-                        <TouchableOpacity style={styles.pickerButton}>
+                        <TouchableOpacity style={styles.pickerButton} onPress={() => openPicker('category')}>
                             <Text style={styles.pickerText}>{selectedCategory}</Text>
                             <Ionicons name="chevron-expand" size={20} color={Colors.light.primary} />
                         </TouchableOpacity>
@@ -217,6 +219,44 @@ export default function StartPodcastScreen() {
                         </TouchableOpacity>
                     </ScrollView>
                 </View>
+            </View>
+        </View>
+      </Modal>
+
+      {/* Sub-Picker Modal for Selections */}
+      <Modal
+         visible={pickerVisible}
+         animationType="fade"
+         transparent={true}
+         onRequestClose={() => setPickerVisible(false)}
+      >
+        <View style={styles.subModalOverlay}>
+            <View style={styles.subModalContent}>
+                <View style={styles.subModalHeader}>
+                    <Text style={styles.subModalTitle}>Select {pickerType.charAt(0).toUpperCase() + pickerType.slice(1)}</Text>
+                    <TouchableOpacity onPress={() => setPickerVisible(false)}>
+                        <Ionicons name="close" size={24} color={Colors.light.onSurface} />
+                    </TouchableOpacity>
+                </View>
+                <FlatList
+                    data={currentPickerData}
+                    keyExtractor={(item, index) => index.toString()}
+                    style={{ maxHeight: SCREEN_HEIGHT * 0.5 }}
+                    renderItem={({ item }) => (
+                        <TouchableOpacity 
+                            style={styles.selectionItem} 
+                            onPress={() => handleSelect(pickerType === 'voice' ? VOICES.find(v => v.name === item) : item)}
+                        >
+                            <Text style={[
+                                styles.selectionLabel, 
+                                (selectedLanguage === item || selectedCategory === item || selectedVoice.name === item) && styles.activeSelectionLabel
+                            ]}>{item}</Text>
+                            {(selectedLanguage === item || selectedCategory === item || selectedVoice.name === item) && (
+                                <Ionicons name="checkmark-circle" size={20} color={Colors.light.primary} />
+                            )}
+                        </TouchableOpacity>
+                    )}
+                />
             </View>
         </View>
       </Modal>
@@ -368,7 +408,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
-    maxHeight: SCREEN_HEIGHT * 0.85,
     paddingTop: 12,
   },
   handle: {
@@ -436,17 +475,7 @@ const styles = StyleSheet.create({
   slider: {
     width: '100%',
     height: 40,
-    marginBottom: 4,
-  },
-  sliderLabels: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     marginBottom: 24,
-  },
-  sliderLabelText: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 12,
-    color: Colors.light.onSurfaceVariant,
   },
   startGenerationButton: {
     shadowColor: Colors.light.primary,
@@ -474,5 +503,46 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_700Bold',
     fontSize: 14,
     color: Colors.light.onSurfaceVariant,
+  },
+  subModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  subModalContent: {
+    width: '100%',
+    backgroundColor: 'white',
+    borderRadius: 24,
+    padding: 24,
+  },
+  subModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  subModalTitle: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 18,
+    color: Colors.light.onSurface,
+  },
+  selectionItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.light.surfaceContainer,
+  },
+  selectionLabel: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 16,
+    color: Colors.light.onSurface,
+  },
+  activeSelectionLabel: {
+    fontFamily: 'Inter_700Bold',
+    color: Colors.light.primary,
   }
 });
