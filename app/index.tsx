@@ -36,7 +36,7 @@ const VOICES = [
 
 /**
  * Main Home Dashboard for MyPodcast App
- * Clean, user-centric header with Document Summarization tools.
+ * Clean, user-centric header with refined labels.
  */
 export default function HomeScreen() {
   const [text, setText] = useState('');
@@ -78,7 +78,7 @@ export default function HomeScreen() {
           {/* Header Section */}
           <View style={styles.header}>
             <View>
-              <Text style={styles.headerWelcomeLabel}>LISTEN TO YOUR PODCASTS</Text>
+              <Text style={styles.headerWelcomeLabel}>LISTEN TO YOUR DOCUMENT SUMMARISE PODCAST</Text>
               <Text style={styles.userNameTitle}>Vinu Patidar</Text>
             </View>
           </View>
@@ -331,10 +331,11 @@ const styles = StyleSheet.create({
   },
   instruction: {
     fontFamily: 'Inter_400Regular',
-    fontSize: 14,
+    fontSize: 16, // Increased from 14
     color: Colors.light.onSurfaceVariant,
     marginBottom: 32,
     marginTop: -8,
+    lineHeight: 22, // Adjusted for better readability
   },
   uploadCard: {
     backgroundColor: 'white',
@@ -367,7 +368,7 @@ const styles = StyleSheet.create({
   },
   uploadTitle: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 22, // Increased from 20
+    fontSize: 22,
     color: Colors.light.onSurface,
     marginBottom: 8,
   },
