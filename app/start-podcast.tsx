@@ -1,43 +1,63 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, TextInput, KeyboardAvoidingView, Platform, Modal, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import Slider from '@react-native-community/slider';
 
-/**
- * Start Podcast Screen
- * Matching the "Process Your Documents" design reference.
- */
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+const LANGUAGES = [
+  'English', 'Spanish', 'French', 'German', 'Chinese', 'Japanese', 'Korean', 'Hindi', 
+  'Portuguese', 'Russian', 'Italian', 'Arabic', 'Turkish', 'Dutch', 'Polish', 'Swedish', 
+  'Indonesian', 'Vietnamese', 'Thai', 'Greek'
+];
+
+const CATEGORIES = [
+  'Story Telling', 'Book Reading', 'Novel Reading', 'Educational', 'News Report', 
+  'Interview', 'Comedy', 'True Crime', 'Tech & Science', 'Business', 'Wellness', 
+  'Travel', 'Sports', 'History', 'Philosophy', 'Kids & Family', 'Arts', 'Music & Media', 
+  'Political', 'Spiritual'
+];
+
+const VOICES = [
+  { id: 'aria', name: 'Aria — Warm & Friendly' },
+  { id: 'marcus', name: 'Marcus — Authoritative' },
+  { id: 'sofia', name: 'Sofia — Soft & Calm' },
+  { id: 'jake', name: 'Jake — High Energy' }
+];
+
 export default function StartPodcastScreen() {
   const [text, setText] = useState('');
+  const [showOptions, setShowOptions] = useState(false);
+  
+  // Generation Options State
+  const [selectedVoice, setSelectedVoice] = useState(VOICES[0]);
+  const [summaryWords, setSummaryWords] = useState(500);
+  const [voiceSpeed, setVoiceSpeed] = useState(1.0);
+  const [selectedLanguage, setSelectedLanguage] = useState('English');
+  const [selectedCategory, setSelectedCategory] = useState('Story Telling');
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{ flex: 1 }}
-      >
-        {/* Navigation Header */}
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
         <View style={styles.navHeader}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
             <Ionicons name="chevron-back" size={24} color={Colors.light.primary} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>VoiceAI</Text>
-          <View style={{ width: 40 }} /> {/* Spacer to center title */}
+          <View style={{ width: 40 }} />
         </View>
 
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          
-          {/* Page Header */}
           <View style={styles.pageHeader}>
             <Text style={styles.title}>Summarize Your{'\n'}Document</Text>
           </View>
 
-          {/* Upload Method Toggle / Instructions */}
           <Text style={styles.instruction}>Upload a file or paste your script below to get started.</Text>
 
-          {/* Large Upload Card (Digital Atoll Style) */}
+          {/* Upload Method Toggle / Instructions */}
           <TouchableOpacity style={styles.uploadCard}>
             <View style={styles.dashContainer}>
               <View style={styles.uploadIconContainer}>
@@ -56,7 +76,6 @@ export default function StartPodcastScreen() {
               <View style={styles.divider} />
           </View>
 
-          {/* Text Input Section */}
           <View style={styles.textInputContainer}>
             <TextInput
               style={styles.textInput}
@@ -69,13 +88,13 @@ export default function StartPodcastScreen() {
             />
             <Text style={styles.wordCount}>{text.split(/\s+/).filter(w => w !== '').length} / 500 words</Text>
           </View>
-
         </ScrollView>
 
         {/* Generate Button (Sticky at Bottom) */}
         <View style={styles.bottomActions}>
           <TouchableOpacity 
-            style={styles.generateButtonContainer}
+            style={styles.generateButtonContainer} 
+            onPress={() => setShowOptions(true)}
           >
             <LinearGradient
               colors={Colors.light.signatureGradient}
@@ -89,6 +108,124 @@ export default function StartPodcastScreen() {
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
+
+      {/* Generation Options Modal (Bottom Sheet Style) */}
+      <Modal
+        visible={showOptions}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowOptions(false)}
+      >
+        <View style={styles.modalOverlay}>
+            <TouchableOpacity 
+                style={styles.dismissOverlay} 
+                activeOpacity={1} 
+                onPress={() => setShowOptions(false)} 
+            />
+            <View style={styles.bottomSheet}>
+                <View style={styles.handle} />
+                <View style={styles.sheetContent}>
+                    <Text style={styles.sheetTitle}>Generation Options</Text>
+                    <Text style={styles.sheetSubtitle}>Customize how your AI voice summary is crafted.</Text>
+                    
+                    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+                        {/* Voice Selection */}
+                        <Text style={styles.label}>VOICE OPTION</Text>
+                        <TouchableOpacity style={styles.pickerButton}>
+                            <Text style={styles.pickerText}>{selectedVoice.name}</Text>
+                            <Ionicons name="chevron-expand" size={20} color={Colors.light.primary} />
+                        </TouchableOpacity>
+
+                        {/* Summary Length Slider */}
+                        <View style={styles.sliderHeader}>
+                            <Text style={styles.label}>SUMMARY LENGTH</Text>
+                            <View style={styles.badge}>
+                                <Text style={styles.badgeText}>{summaryWords} words</Text>
+                            </View>
+                        </View>
+                        <Slider
+                            style={styles.slider}
+                            minimumValue={100}
+                            maximumValue={800}
+                            step={50}
+                            value={summaryWords}
+                            onValueChange={setSummaryWords}
+                            minimumTrackTintColor={Colors.light.primary}
+                            maximumTrackTintColor={Colors.light.surfaceContainerHigh}
+                            thumbTintColor={Colors.light.primary}
+                        />
+                        <View style={styles.sliderLabels}>
+                            <Text style={styles.sliderLabelText}>Short</Text>
+                            <Text style={styles.sliderLabelText}>Detailed</Text>
+                        </View>
+
+                        {/* Voice Speed Slider */}
+                        <View style={styles.sliderHeader}>
+                            <Text style={styles.label}>VOICE SPEED</Text>
+                            <View style={styles.badge}>
+                                <Text style={styles.badgeText}>{voiceSpeed.toFixed(1)}x</Text>
+                            </View>
+                        </View>
+                        <Slider
+                            style={styles.slider}
+                            minimumValue={0.5}
+                            maximumValue={2.0}
+                            step={0.1}
+                            value={voiceSpeed}
+                            onValueChange={setVoiceSpeed}
+                            minimumTrackTintColor={Colors.light.primary}
+                            maximumTrackTintColor={Colors.light.surfaceContainerHigh}
+                            thumbTintColor={Colors.light.primary}
+                        />
+                         <View style={styles.sliderLabels}>
+                            <Text style={styles.sliderLabelText}>Slow</Text>
+                            <Text style={styles.sliderLabelText}>Fast</Text>
+                        </View>
+
+                        {/* Language Selector */}
+                        <Text style={styles.label}>SELECT LANGUAGE</Text>
+                        <TouchableOpacity style={styles.pickerButton}>
+                            <Text style={styles.pickerText}>{selectedLanguage}</Text>
+                            <Ionicons name="chevron-expand" size={20} color={Colors.light.primary} />
+                        </TouchableOpacity>
+
+                        {/* Podcast Category */}
+                        <Text style={styles.label}>PODCAST CATEGORY</Text>
+                        <TouchableOpacity style={styles.pickerButton}>
+                            <Text style={styles.pickerText}>{selectedCategory}</Text>
+                            <Ionicons name="chevron-expand" size={20} color={Colors.light.primary} />
+                        </TouchableOpacity>
+
+                        {/* Toggle Options (From references) */}
+                        <View style={styles.optionRow}>
+                             <View style={styles.optionInfo}>
+                                <Ionicons name="language-outline" size={20} color={Colors.light.primary} />
+                                <Text style={styles.optionLabel}>Multi-Language Support</Text>
+                             </View>
+                             <TouchableOpacity style={styles.toggleActive}>
+                                <View style={styles.toggleCircle} />
+                             </TouchableOpacity>
+                        </View>
+
+                        <TouchableOpacity style={styles.startGenerationButton}>
+                            <LinearGradient
+                                colors={Colors.light.signatureGradient}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 0 }}
+                                style={styles.startGenerationGradient}
+                            >
+                                <Text style={styles.startGenerationText}>Start Generation ⚡</Text>
+                            </LinearGradient>
+                        </TouchableOpacity>
+                        
+                        <TouchableOpacity style={styles.cancelButton} onPress={() => setShowOptions(false)}>
+                            <Text style={styles.cancelText}>Cancel</Text>
+                        </TouchableOpacity>
+                    </ScrollView>
+                </View>
+            </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -105,9 +242,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 12,
   },
-  backButton: {
-    padding: 8,
-  },
   headerTitle: {
     fontFamily: 'Inter_700Bold',
     fontSize: 20,
@@ -119,13 +253,6 @@ const styles = StyleSheet.create({
   },
   pageHeader: {
     marginBottom: 32,
-  },
-  overline: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 12,
-    color: Colors.light.primary,
-    letterSpacing: 1.2,
-    marginBottom: 8,
   },
   title: {
     fontFamily: 'Inter_700Bold',
@@ -142,7 +269,7 @@ const styles = StyleSheet.create({
   uploadCard: {
     backgroundColor: Colors.light.surfaceContainerLowest,
     borderRadius: 24,
-    padding: 4, // Padding for the dashed border look
+    padding: 4,
     marginBottom: 32,
     shadowColor: Colors.light.primary,
     shadowOffset: { width: 0, height: 16 },
@@ -223,13 +350,6 @@ const styles = StyleSheet.create({
     left: 24,
     right: 24,
   },
-  generateButtonContainer: {
-    shadowColor: Colors.light.primary,
-    shadowOffset: { width: 0, height: 16 },
-    shadowOpacity: 0.2,
-    shadowRadius: 32,
-    elevation: 8,
-  },
   generateButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -242,4 +362,158 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_700Bold',
     fontSize: 18,
   },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(26, 27, 31, 0.4)',
+    justifyContent: 'flex-end',
+  },
+  dismissOverlay: {
+    flex: 1,
+  },
+  bottomSheet: {
+    backgroundColor: 'white',
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    maxHeight: SCREEN_HEIGHT * 0.85,
+    paddingTop: 12,
+  },
+  handle: {
+    width: 40,
+    height: 4,
+    backgroundColor: Colors.light.surfaceContainerHigh,
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginBottom: 20,
+  },
+  sheetContent: {
+    paddingHorizontal: 24,
+  },
+  sheetTitle: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 24,
+    color: Colors.light.onSurface,
+    marginBottom: 8,
+  },
+  sheetSubtitle: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 14,
+    color: Colors.light.onSurfaceVariant,
+    marginBottom: 32,
+  },
+  label: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 12,
+    color: Colors.light.onSurfaceVariant,
+    letterSpacing: 1.2,
+    marginBottom: 12,
+    marginTop: 10,
+  },
+  pickerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: Colors.light.surfaceContainerLow,
+    padding: 18,
+    borderRadius: 16,
+    marginBottom: 24,
+  },
+  pickerText: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 16,
+    color: Colors.light.onSurface,
+  },
+  sliderHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  badge: {
+    backgroundColor: 'rgba(0, 88, 188, 0.08)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  badgeText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 12,
+    color: Colors.light.primary,
+  },
+  slider: {
+    width: '100%',
+    height: 40,
+    marginBottom: 4,
+  },
+  sliderLabels: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+  },
+  sliderLabelText: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 12,
+    color: Colors.light.onSurfaceVariant,
+  },
+  optionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: Colors.light.surfaceContainerLow,
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 32,
+    marginTop: 10,
+  },
+  optionInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  optionLabel: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 14,
+    color: Colors.light.onSurface,
+    marginLeft: 12,
+  },
+  toggleActive: {
+    width: 50,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: Colors.light.primary,
+    justifyContent: 'center',
+    paddingHorizontal: 2,
+  },
+  toggleCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'white',
+    alignSelf: 'flex-end',
+  },
+  startGenerationButton: {
+    shadowColor: Colors.light.primary,
+    shadowOffset: { width: 0, height: 16 },
+    shadowOpacity: 0.2,
+    shadowRadius: 32,
+    elevation: 8,
+    marginBottom: 20,
+  },
+  startGenerationGradient: {
+    paddingVertical: 18,
+    borderRadius: 16,
+    alignItems: 'center',
+  },
+  startGenerationText: {
+    color: 'white',
+    fontFamily: 'Inter_700Bold',
+    fontSize: 18,
+  },
+  cancelButton: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  cancelText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 14,
+    color: Colors.light.onSurfaceVariant,
+  }
 });
