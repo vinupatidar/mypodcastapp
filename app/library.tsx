@@ -29,7 +29,11 @@ export default function LibraryScreen() {
         {/* Podcast List */}
         <View style={styles.listContainer}>
           {RECENT_EPISODES.map((item) => (
-            <TouchableOpacity key={item.id} style={styles.episodeCard}>
+            <TouchableOpacity 
+                key={item.id} 
+                style={styles.episodeCard} 
+                onPress={() => router.push('/generating-audio')}
+            >
               <View style={styles.episodeIcon}>
                 <Ionicons name="play" size={20} color={Colors.light.primary} />
               </View>
