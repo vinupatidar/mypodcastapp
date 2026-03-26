@@ -31,8 +31,7 @@ export default function StartPodcastScreen() {
           
           {/* Page Header */}
           <View style={styles.pageHeader}>
-            <Text style={styles.overline}>NEW PROJECT</Text>
-            <Text style={styles.title}>Process Your{'\n'}Documents</Text>
+            <Text style={styles.title}>Summarize Your{'\n'}Document</Text>
           </View>
 
           {/* Upload Method Toggle / Instructions */}
