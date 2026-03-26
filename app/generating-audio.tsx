@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, Dimensions, Animated, Easing } from 'react-native';
+import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, Dimensions, Animated, Easing, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,7 +10,7 @@ const { width } = Dimensions.get('window');
 
 /**
  * Generating Audio Screen
- * Replicating the VoiceAI generation UI.
+ * Replicating the VoiceAI generation UI with scroll and extra controls.
  */
 export default function GeneratingAudioScreen() {
   const [pulseAnim] = useState(new Animated.Value(1));
@@ -51,63 +51,77 @@ export default function GeneratingAudioScreen() {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.content}>
-        {/* Status Badge */}
-        <View style={styles.badge}>
-            <Text style={styles.badgeText}>GENERATING AUDIO</Text>
-        </View>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.content}>
+            {/* Status Badge */}
+            <View style={styles.badge}>
+                <Text style={styles.badgeText}>GENERATING AUDIO</Text>
+            </View>
 
-        {/* Waveform Visualization */}
-        <View style={styles.vizWrapper}>
-            <View style={styles.outerCircle}>
-                <View style={styles.innerCircle}>
-                    <Animated.View style={[styles.waveformContainer, { transform: [{ scale: pulseAnim }] }]}>
-                        <View style={[styles.wave, { height: 40, opacity: 0.4 }]} />
-                        <View style={[styles.wave, { height: 60, opacity: 0.6 }]} />
-                        <View style={[styles.wave, { height: 80, opacity: 1, backgroundColor: Colors.light.primary }]} />
-                        <View style={[styles.wave, { height: 100, opacity: 1, backgroundColor: Colors.light.primary }]} />
-                        <View style={[styles.wave, { height: 80, opacity: 1, backgroundColor: Colors.light.primary }]} />
-                        <View style={[styles.wave, { height: 60, opacity: 0.6 }]} />
-                        <View style={[styles.wave, { height: 40, opacity: 0.4 }]} />
-                    </Animated.View>
-                    <Ionicons name="mic" size={20} color={Colors.light.primary} style={styles.micIcon} />
-                    <Text style={styles.vizLabel}>VOICE SYNTHESIS</Text>
+            {/* Waveform Visualization */}
+            <View style={styles.vizWrapper}>
+                <View style={styles.outerCircle}>
+                    <View style={styles.innerCircle}>
+                        <Animated.View style={[styles.waveformContainer, { transform: [{ scale: pulseAnim }] }]}>
+                            <View style={[styles.wave, { height: 40, opacity: 0.4 }]} />
+                            <View style={[styles.wave, { height: 60, opacity: 0.6 }]} />
+                            <View style={[styles.wave, { height: 80, opacity: 1, backgroundColor: Colors.light.primary }]} />
+                            <View style={[styles.wave, { height: 100, opacity: 1, backgroundColor: Colors.light.primary }]} />
+                            <View style={[styles.wave, { height: 80, opacity: 1, backgroundColor: Colors.light.primary }]} />
+                            <View style={[styles.wave, { height: 60, opacity: 0.6 }]} />
+                            <View style={[styles.wave, { height: 40, opacity: 0.4 }]} />
+                        </Animated.View>
+                        <Ionicons name="mic" size={20} color={Colors.light.primary} style={styles.micIcon} />
+                        <Text style={styles.vizLabel}>VOICE SYNTHESIS</Text>
+                    </View>
                 </View>
             </View>
-        </View>
 
-        {/* Summary Preview Section */}
-        <View style={styles.previewSection}>
-            <Text style={styles.sectionTitle}>Summary Preview</Text>
-            <View style={styles.previewCard}>
-                <Text style={styles.previewContent}>
-                    The latest research into neural voice synthesis suggests that emotional cadence can now be mapped with over 98% accuracy. 
-                    This generation session is applying a <Text style={styles.highlight}>Professional Narrative</Text> tone with subtle emphasis on key technical breakthroughs. 
-                    The resulting audio will maintain a consistent atmospheric depth suitable for high-end editorial presentations.
-                </Text>
-                
-                <View style={styles.processingBar}>
-                    <View style={styles.tokenCircle} />
-                    <Text style={styles.processingText}>Processing 2.4k tokens...</Text>
-                </View>
-            </View>
-        </View>
-
-        {/* Control Actions */}
-        <View style={styles.controls}>
-            <ControlItem icon="square" label="STOP" />
-            <TouchableOpacity style={styles.pauseButton}>
+            {/* Top Pause Control (As requested: New button after circle) */}
+            <TouchableOpacity style={styles.topPauseControl}>
                 <LinearGradient
                     colors={Colors.light.signatureGradient}
-                    style={styles.pauseGradient}
+                    style={styles.topPauseGradient}
                 >
-                    <Ionicons name="pause" size={32} color="white" />
+                    <Ionicons name="pause" size={24} color="white" />
                 </LinearGradient>
-                <Text style={styles.pauseLabel}>PAUSE</Text>
+                <Text style={styles.topPauseLabel}>TAP TO PAUSE SENSE</Text>
             </TouchableOpacity>
-            <ControlItem icon="download-outline" label="DOWNLOAD" />
+
+            {/* Summary Preview Section */}
+            <View style={styles.previewSection}>
+                <Text style={styles.sectionTitle}>Summary Preview</Text>
+                <View style={styles.previewCard}>
+                    <Text style={styles.previewContent}>
+                        The latest research into neural voice synthesis suggests that emotional cadence can now be mapped with over 98% accuracy. 
+                        This generation session is applying a <Text style={styles.highlight}>Professional Narrative</Text> tone with subtle emphasis on key technical breakthroughs. 
+                        The resulting audio will maintain a consistent atmospheric depth suitable for high-end editorial presentations. {'\n'}{'\n'}
+                        Our advanced summary engine is extracting the key pillars of your content to ensure a high-authority delivery. Feel free to pause and download the clip below.
+                    </Text>
+                    
+                    <View style={styles.processingBar}>
+                        <View style={styles.tokenCircle} />
+                        <Text style={styles.processingText}>Processing 2.4k tokens...</Text>
+                    </View>
+                </View>
+            </View>
+
+            {/* Control Actions (At bottom of scroll content) */}
+            <View style={styles.controls}>
+                <ControlItem icon="square" label="STOP" />
+                <TouchableOpacity style={styles.pauseButton}>
+                    <LinearGradient
+                        colors={Colors.light.signatureGradient}
+                        style={styles.pauseGradient}
+                    >
+                        <Ionicons name="pause" size={32} color="white" />
+                    </LinearGradient>
+                    <Text style={styles.pauseLabel}>PAUSE</Text>
+                </TouchableOpacity>
+                <ControlItem icon="download-outline" label="DOWNLOAD" />
+            </View>
         </View>
-      </View>
+      </ScrollView>
 
       {/* Bottom Navigation */}
       <View style={styles.tabBar}>
@@ -146,7 +160,15 @@ function TabItem({ icon, label, active }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#faf9fe', // Consistent background
+    backgroundColor: '#faf9fe', 
+  },
+  scrollContent: {
+    paddingBottom: 120, // Space for tab bar
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 24,
+    alignItems: 'center',
   },
   navHeader: {
     flexDirection: 'row',
@@ -173,11 +195,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  content: {
-    flex: 1,
-    paddingHorizontal: 24,
-    alignItems: 'center',
-  },
   badge: {
     backgroundColor: 'rgba(0, 88, 188, 0.1)',
     paddingVertical: 8,
@@ -197,7 +214,7 @@ const styles = StyleSheet.create({
     height: width * 0.8,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 24,
   },
   outerCircle: {
     width: '100%',
@@ -244,6 +261,34 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: Colors.light.onSurfaceVariant,
     letterSpacing: 1,
+  },
+  topPauseControl: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: 'white',
+      paddingVertical: 12,
+      paddingHorizontal: 24,
+      borderRadius: 16,
+      marginBottom: 32,
+      shadowColor: Colors.light.primary,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.05,
+      shadowRadius: 8,
+      elevation: 2,
+  },
+  topPauseGradient: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: 16,
+  },
+  topPauseLabel: {
+      fontFamily: 'Inter_700Bold',
+      fontSize: 12,
+      color: Colors.light.onSurface,
+      letterSpacing: 0.5,
   },
   previewSection: {
     width: '100%',
@@ -298,6 +343,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     paddingHorizontal: 20,
+    marginBottom: 20,
   },
   controlItemWrapper: {
     alignItems: 'center',
@@ -326,7 +372,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
-    // Accent shadow for the main control
     shadowColor: Colors.light.primary,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.2,
