@@ -178,9 +178,9 @@ export default function GeneratingAudioScreen() {
         </ScrollView>
 
         <View style={styles.tabBar}>
-            <TabItem icon="home" label="HOME" />
+            <TabItem icon="home" label="HOME" route="/" />
             <TabItem icon="mic" label="LIBRARY" active />
-            <TabItem icon="person" label="PROFILE" />
+            <TabItem icon="person" label="PROFILE" route="/profile" />
         </View>
       </SafeAreaView>
 
@@ -314,9 +314,12 @@ export default function GeneratingAudioScreen() {
   );
 }
 
-function TabItem({ icon, label, active }: any) {
+function TabItem({ icon, label, active, route }: any) {
     return (
-        <TouchableOpacity style={styles.tabItem}>
+        <TouchableOpacity 
+            style={styles.tabItem} 
+            onPress={() => route && router.replace(route as any)}
+        >
             <Ionicons 
                 name={icon + (active ? "" : "-outline") as any} 
                 size={22} 
@@ -382,8 +385,8 @@ const styles = StyleSheet.create({
     letterSpacing: 1.2,
   },
   vizWrapper: {
-    width: width * 0.8,
-    height: width * 0.8,
+    width: SCREEN_WIDTH * 0.8,
+    height: SCREEN_WIDTH * 0.8,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 24,
@@ -391,7 +394,7 @@ const styles = StyleSheet.create({
   outerCircle: {
     width: '100%',
     height: '100%',
-    borderRadius: width * 0.4,
+    borderRadius: SCREEN_WIDTH * 0.4,
     borderWidth: 1,
     borderColor: 'rgba(0, 88, 188, 0.1)',
     justifyContent: 'center',
@@ -400,7 +403,7 @@ const styles = StyleSheet.create({
   innerCircle: {
     width: '85%',
     height: '85%',
-    borderRadius: width * 0.35,
+    borderRadius: SCREEN_WIDTH * 0.35,
     borderWidth: 2,
     borderColor: 'rgba(0, 88, 188, 0.05)',
     justifyContent: 'center',

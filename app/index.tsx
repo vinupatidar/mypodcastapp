@@ -1,17 +1,16 @@
 import React from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, Dimensions } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, Dimensions, Platform } from 'react-native';
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '../constants/Colors';
-import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
-import { router } from 'expo-router';
-
 /**
- * Main Home Screen for MyPodcast App
- * Updated layout based on user feedback.
+ * Main Home Dashboard for MyPodcast App
+ * Clean layout focused on main "New Podcast" action.
  */
 export default function HomeScreen() {
   return (
@@ -32,94 +31,62 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* New Podcast Button (Linked to start-podcast) */}
-        <TouchableOpacity style={styles.topAction} onPress={() => router.push('/start-podcast')}>
-            <LinearGradient
-                colors={Colors.light.signatureGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.generateButton}
+        {/* Primary CTA Section (Top) */}
+        <View style={styles.actionSection}>
+            <TouchableOpacity 
+                style={styles.topAction} 
+                activeOpacity={0.8}
+                onPress={() => router.push('/start-podcast')}
             >
-                <Ionicons name="sparkles" size={20} color="white" style={{ marginRight: 8 }} />
-                <Text style={styles.generateButtonText}>New Podcast</Text>
-            </LinearGradient>
-         </TouchableOpacity>
-
-        {/* Recent Section (Just showing episodes now) */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Recent Episodes</Text>
-            <TouchableOpacity>
-              <Text style={styles.viewAll}>View All</Text>
+                <LinearGradient
+                    colors={Colors.light.signatureGradient}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.gradientCard}
+                >
+                    <View style={styles.actionInfo}>
+                        <View style={styles.iconCircle}>
+                            <Ionicons name="add" size={32} color={Colors.light.primary} />
+                        </View>
+                        <View style={styles.textContainer}>
+                            <Text style={styles.actionTitle}>New Podcast</Text>
+                            <Text style={styles.actionSubtitle}>Start generating your AI voice summary.</Text>
+                        </View>
+                    </View>
+                    <Ionicons name="chevron-forward" size={24} color="rgba(255, 255, 255, 0.8)" />
+                </LinearGradient>
             </TouchableOpacity>
-          </View>
-
-          {/* List Items (Tonal Layering, No Borders) */}
-          <PodcastItem 
-            title="The Future of AI" 
-            date="OCT 24, 2026" 
-            duration="2.4 MB" 
-            icon="document-text-outline"
-          />
-          <PodcastItem 
-            title="Design Principles 101" 
-            date="OCT 22, 2026" 
-            duration="840 KB" 
-            icon="color-palette-outline"
-          />
-          <PodcastItem 
-            title="Morning News Digest" 
-            date="OCT 20, 2026" 
-            duration="12 KB" 
-            icon="newspaper-outline"
-          />
-          <PodcastItem 
-            title="Space Exploration Update" 
-            date="OCT 18, 2026" 
-            duration="4.1 MB" 
-            icon="rocket-outline"
-          />
-          <PodcastItem 
-            title="Weekly Tech Review" 
-            date="OCT 15, 2026" 
-            duration="1.8 MB" 
-            icon="phone-portrait-outline"
-          />
         </View>
+
+        {/* Welcome Card / Instruction */}
+        <View style={styles.welcomeCard}>
+            <Ionicons name="sparkles-outline" size={24} color={Colors.light.primary} style={{ marginBottom: 12 }} />
+            <Text style={styles.welcomeTitle}>Welcome Back!</Text>
+            <Text style={styles.welcomeText}>
+              Tap the button above to start a new podcast, or visit your Library to listen to previous summaries.
+            </Text>
+        </View>
+
       </ScrollView>
 
-      {/* Bottom Navigation Mockup */}
+      {/* Bottom Navigation */}
       <View style={styles.tabBar}>
           <TabItem icon="home" label="HOME" active />
-          <TabItem icon="mic" label="LIBRARY" />
-          <TabItem icon="person" label="PROFILE" />
+          <TabItem icon="mic" label="LIBRARY" route="/library" />
+          <TabItem icon="person" label="PROFILE" route="/profile" />
       </View>
     </SafeAreaView>
   );
 }
 
-function PodcastItem({ title, date, duration, icon }: any) {
-  return (
-    <TouchableOpacity style={styles.podcastItem}>
-      <View style={styles.itemImageContainer}>
-        <Ionicons name={icon} size={20} color={Colors.light.primary} />
-      </View>
-      <View style={styles.itemInfo}>
-        <Text style={styles.itemTitle}>{title}</Text>
-        <Text style={styles.itemSubtitle}>{date} • {duration}</Text>
-      </View>
-      <TouchableOpacity>
-        <Ionicons name="ellipsis-vertical" size={20} color={Colors.light.onSurfaceVariant} />
-      </TouchableOpacity>
-    </TouchableOpacity>
-  );
-}
-
-function TabItem({ icon, label, active }: any) {
+function TabItem({ icon, label, active, route }: any) {
     return (
-        <TouchableOpacity style={styles.tabItem}>
+        <TouchableOpacity 
+            style={styles.tabItem} 
+            onPress={() => route && router.replace(route as any)}
+        >
             <Ionicons 
-                name={icon + (active ? "" : "-outline")} 
+                name={icon + (active ? "" : "-outline") as any} 
                 size={22} 
                 color={active ? Colors.light.primary : Colors.light.onSurfaceVariant} 
             />
@@ -131,24 +98,24 @@ function TabItem({ icon, label, active }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.light.surface,
+    backgroundColor: '#faf9fe', // Neutral, tonal background
   },
   scrollContent: {
     padding: 24,
-    paddingBottom: 100, // Reduced space since button moved up
+    paddingBottom: 110,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginTop: 20,
-    marginBottom: 32,
+    alignItems: 'baseline',
+    marginBottom: 40,
+    marginTop: 10,
   },
   overline: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 12,
-    color: Colors.light.primary,
-    letterSpacing: 1.2,
+    fontSize: 10,
+    color: Colors.light.onSurfaceVariant,
+    letterSpacing: 2,
     marginBottom: 8,
   },
   title: {
@@ -158,92 +125,82 @@ const styles = StyleSheet.create({
     lineHeight: 38,
   },
   profileButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: Colors.light.primaryContainer,
     overflow: 'hidden',
-    backgroundColor: Colors.light.surfaceContainer,
   },
   profileImage: {
     width: '100%',
     height: '100%',
   },
-  topAction: {
-    marginBottom: 40,
+  actionSection: {
+    marginBottom: 32,
   },
-  generateButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 18,
-    paddingHorizontal: 32,
-    borderRadius: 30,
-    width: '100%', // Fixed to take full width of container
-    justifyContent: 'center',
-    // Ambient Shadow
+  topAction: {
+    borderRadius: 32,
     shadowColor: Colors.light.primary,
     shadowOffset: { width: 0, height: 16 },
     shadowOpacity: 0.15,
     shadowRadius: 32,
     elevation: 8,
   },
-  generateButtonText: {
-    color: 'white',
-    fontFamily: 'Inter_700Bold',
-    fontSize: 18,
-  },
-  section: {
-    marginBottom: 20,
-  },
-  sectionHeader: {
+  gradientCard: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
+    padding: 20,
+    paddingVertical: 24,
+    borderRadius: 32,
   },
-  sectionTitle: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 20,
-    color: Colors.light.onSurface,
-  },
-  viewAll: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 14,
-    color: Colors.light.primary,
-  },
-  podcastItem: {
+  actionInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 20,
-    backgroundColor: Colors.light.surfaceContainerLowest,
-    borderRadius: 16,
-    marginBottom: 12,
-    shadowColor: Colors.light.primary,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.03,
-    shadowRadius: 16,
+    flex: 1,
   },
-  itemImageContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    backgroundColor: 'rgba(0, 88, 188, 0.05)',
+  iconCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'white',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
   },
-  itemInfo: {
+  textContainer: {
     flex: 1,
   },
-  itemTitle: {
+  actionTitle: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 16,
-    color: Colors.light.onSurface,
+    fontSize: 20,
+    color: 'white',
     marginBottom: 4,
   },
-  itemSubtitle: {
+  actionSubtitle: {
     fontFamily: 'Inter_400Regular',
     fontSize: 12,
-    color: Colors.light.onSurfaceVariant,
+    color: 'rgba(255, 255, 255, 0.8)',
+    lineHeight: 16,
+  },
+  welcomeCard: {
+      backgroundColor: 'white',
+      borderRadius: 24,
+      padding: 24,
+      borderWidth: 1,
+      borderColor: 'rgba(0, 88, 188, 0.05)',
+  },
+  welcomeTitle: {
+      fontFamily: 'Inter_700Bold',
+      fontSize: 20,
+      color: Colors.light.onSurface,
+      marginBottom: 8,
+  },
+  welcomeText: {
+      fontFamily: 'Inter_400Regular',
+      fontSize: 14,
+      color: Colors.light.onSurfaceVariant,
+      lineHeight: 20,
   },
   tabBar: {
     position: 'absolute',
@@ -262,12 +219,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   tabLabel: {
-    fontFamily: 'Inter_700Bold',
+    fontFamily: 'Inter_400Regular',
     fontSize: 10,
     marginTop: 4,
     color: Colors.light.onSurfaceVariant,
   },
   activeTabLabel: {
+    fontFamily: 'Inter_700Bold',
     color: Colors.light.primary,
-  }
+  },
 });
