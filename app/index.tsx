@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import Slider from '@react-native-community/slider';
 import * as DocumentPicker from 'expo-document-picker';
+import PaywallScreen from './paywall';
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -46,6 +47,9 @@ export default function HomeScreen() {
   const [showOptions, setShowOptions] = useState(false);
   const [pickerVisible, setPickerVisible] = useState(false);
   const [pickerType, setPickerType] = useState<'language' | 'category' | 'voice'>('language');
+  
+  // Subscription Interception (Simulation)
+  const [hasSubscription, setHasSubscription] = useState(false);
   
   // Data States
   const [selectedVoice, setSelectedVoice] = useState(VOICES[0]);
@@ -93,6 +97,21 @@ export default function HomeScreen() {
     pickerType === 'language' ? LANGUAGES : 
     pickerType === 'category' ? CATEGORIES : 
     VOICES.map(v => v.name);
+
+  if (!hasSubscription) {
+      // Direct redirect to Paywall if no subscription
+      return (
+          <View style={{ flex: 1, backgroundColor: '#103E5B' }}>
+              <TouchableOpacity 
+                  style={{ flex: 1 }} 
+                  onPress={() => setHasSubscription(true)} 
+                  activeOpacity={1}
+              >
+                  <PaywallScreen />
+              </TouchableOpacity>
+          </View>
+      );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
