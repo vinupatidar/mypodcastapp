@@ -19,6 +19,7 @@ export default function ProfileScreen() {
     const [plans, setPlans] = useState<any[]>([]);
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
     const [selectedUpgrade, setSelectedUpgrade] = useState('');
+    const [remainingCredits, setRemainingCredits] = useState(0);
 
     const [loadingPlans, setLoadingPlans] = useState(true);
 
@@ -44,6 +45,7 @@ export default function ProfileScreen() {
             if (profileRes.data) setProfile(profileRes.data);
             if (subRes.data?.subscription_plans) {
                 setCurrentPlan(subRes.data.subscription_plans.name);
+                setRemainingCredits(subRes.data.remaining_credits || 0);
             }
             if (plansRes.data) {
                 setPlans(plansRes.data);
@@ -89,13 +91,17 @@ export default function ProfileScreen() {
         
         setLoading(true);
         try {
+            const selectedPlanData = plans.find(p => p.id === selectedUpgrade);
+            const planCredits = selectedPlanData?.credits || 0;
+
             const { error } = await supabase
                 .from('user_subscriptions')
                 .upsert({ 
                     user_id: user.id, 
                     plan_id: selectedUpgrade, 
                     status: 'active',
-                    start_date: new Date().toISOString()
+                    start_date: new Date().toISOString(),
+                    remaining_credits: planCredits
                 }, { onConflict: 'user_id' });
 
             if (error) throw error;
@@ -117,6 +123,14 @@ export default function ProfileScreen() {
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
                 
                 <View style={styles.profileHeader}>
+                    <TouchableOpacity 
+                        style={[styles.creditBadge, { position: 'absolute', top: 0, right: 0 }]}
+                        onPress={() => Alert.alert('Credits', `You have ${remainingCredits} credits remaining. Want more? Upgrade your plan below.`)}
+                    >
+                        <Ionicons name="star" size={16} color="#fbbf24" style={{ marginRight: 4 }} />
+                        <Text style={styles.creditText}>{remainingCredits}</Text>
+                    </TouchableOpacity>
+
                     <LinearGradient
                         colors={Colors.light.signatureGradient}
                         style={styles.avatarGradient}
@@ -372,4 +386,6 @@ const styles = StyleSheet.create({
     tabItem: { alignItems: 'center' },
     tabLabel: { fontFamily: 'Inter_400Regular', fontSize: 10, marginTop: 4, color: '#aaa' },
     activeTabLabel: { fontFamily: 'Inter_700Bold', color: Colors.light.primary },
+    creditBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, shadowColor: '#fbbf24', shadowOpacity: 0.1, shadowRadius: 8, elevation: 2, borderWidth: 1, borderColor: 'rgba(251, 191, 36, 0.2)' },
+    creditText: { fontFamily: 'Inter_700Bold', fontSize: 14, color: Colors.light.onSurface },
 });

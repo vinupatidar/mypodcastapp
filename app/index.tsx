@@ -50,6 +50,7 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [hasSubscription, setHasSubscription] = useState(false);
   const [profile, setProfile] = useState<any>(null);
+  const [remainingCredits, setRemainingCredits] = useState<number>(0);
   
   // UI States
   const [showOptions, setShowOptions] = useState(false);
@@ -124,11 +125,14 @@ export default function HomeScreen() {
 
         if (endDate && now > endDate) {
             setHasSubscription(false);
+            setRemainingCredits(0);
         } else {
             setHasSubscription(true);
+            setRemainingCredits(sub.remaining_credits || 0);
         }
       } else {
         setHasSubscription(false);
+        setRemainingCredits(0);
       }
 
       if (profRes.data) setProfile(profRes.data);
@@ -207,6 +211,13 @@ export default function HomeScreen() {
               <Text style={styles.userNameTitle}>{session?.user?.user_metadata?.full_name || profile?.full_name || ''}</Text>
               <Text style={styles.headerWelcomeLabel}>LISTEN TO YOUR DOCUMENT SUMMARISE PODCAST</Text>
             </View>
+            <TouchableOpacity 
+                style={styles.creditBadge}
+                onPress={() => Alert.alert('Credits', `You have ${remainingCredits} credits remaining. Want more? Check your profile.`)}
+            >
+                <Ionicons name="star" size={16} color="#fbbf24" style={{ marginRight: 4 }} />
+                <Text style={styles.creditText}>{remainingCredits}</Text>
+            </TouchableOpacity>
           </View>
 
           <View style={styles.summarizeContainer}>
@@ -451,6 +462,9 @@ const styles = StyleSheet.create({
   textInputContainer: { backgroundColor: 'white', borderRadius: 20, padding: 16, height: 140, marginBottom: 24, elevation: 1 },
   textInput: { fontFamily: 'Inter_400Regular', fontSize: 15, color: Colors.light.onSurface, flex: 1, textAlignVertical: 'top' },
   
+  creditBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, shadowColor: '#fbbf24', shadowOpacity: 0.1, shadowRadius: 8, elevation: 2, borderWidth: 1, borderColor: 'rgba(251, 191, 36, 0.2)' },
+  creditText: { fontFamily: 'Inter_700Bold', fontSize: 14, color: Colors.light.onSurface },
+
   confirmationRow: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 20, paddingHorizontal: 4 },
   checkbox: { width: 20, height: 20, borderRadius: 6, borderWidth: 2, borderColor: '#3b82f6', marginRight: 12, marginTop: 2, justifyContent: 'center', alignItems: 'center' },
   checkboxActive: { backgroundColor: '#3b82f6' },

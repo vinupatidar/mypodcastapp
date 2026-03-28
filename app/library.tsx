@@ -4,6 +4,8 @@ import { Image } from 'expo-image';
 import { Colors } from '../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { supabase } from '../services/supabase';
+import { Alert } from 'react-native';
 
 // Computer's Local IP for Physical Devices
 const API_BASE_URL = 'http://192.168.1.2:5010';
@@ -15,10 +17,24 @@ const API_BASE_URL = 'http://192.168.1.2:5010';
 export default function LibraryScreen() {
   const [episodes, setEpisodes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [remainingCredits, setRemainingCredits] = useState(0);
 
   useEffect(() => {
      fetchEpisodes();
+     fetchCredits();
   }, []);
+
+  const fetchCredits = async () => {
+    try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+            const { data } = await supabase.from('user_subscriptions').select('remaining_credits').eq('user_id', user.id).single();
+            if (data) setRemainingCredits(data.remaining_credits);
+        }
+    } catch (e) {
+        console.error('Fetch Credits Error:', e);
+    }
+  };
 
   const fetchEpisodes = async () => {
     try {
@@ -56,11 +72,12 @@ export default function LibraryScreen() {
           <Text style={styles.headerWelcomeLabel}>YOUR COLLECTION</Text>
           <Text style={styles.userNameTitle}>Library</Text>
         </View>
-        <TouchableOpacity style={styles.profileButton}>
-          <Image 
-            source="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=100" 
-            style={styles.profileImage}
-          />
+        <TouchableOpacity 
+            style={styles.creditBadge}
+            onPress={() => Alert.alert('Credits', `You have ${remainingCredits} credits remaining. Want more? Check your profile.`)}
+        >
+            <Ionicons name="star" size={16} color="#fbbf24" style={{ marginRight: 4 }} />
+            <Text style={styles.creditText}>{remainingCredits}</Text>
         </TouchableOpacity>
       </View>
 
@@ -310,5 +327,24 @@ const styles = StyleSheet.create({
   activeTabLabel: {
     fontFamily: 'Inter_700Bold',
     color: Colors.light.primary,
+  },
+  creditBadge: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    backgroundColor: 'white', 
+    paddingHorizontal: 12, 
+    paddingVertical: 6, 
+    borderRadius: 12, 
+    shadowColor: '#fbbf24', 
+    shadowOpacity: 0.1, 
+    shadowRadius: 8, 
+    elevation: 2, 
+    borderWidth: 1, 
+    borderColor: 'rgba(251, 191, 36, 0.2)' 
+  },
+  creditText: { 
+    fontFamily: 'Inter_700Bold', 
+    fontSize: 14, 
+    color: Colors.light.onSurface 
   },
 });

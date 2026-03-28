@@ -18,7 +18,8 @@ create table subscription_plans (
   features text[] not null,
   icon text,
   gradient text[],
-  is_best boolean default false
+  is_best boolean default false,
+  credits integer not null default 0
 );
 
 -- 3. Create User Subscriptions Table
@@ -29,6 +30,7 @@ create table user_subscriptions (
   status text default 'active' not null,
   start_date timestamp with time zone default now() not null,
   end_date timestamp with time zone,
+  remaining_credits integer not null default 0,
   unique(user_id)
 );
 
@@ -68,12 +70,14 @@ values
    array['5 AI Podcast Generations', '30 Days Library History', 'High Quality Audio'], 
    'bicycle-outline', 
    array['#4ade80', '#2dd4bf'], 
-   false),
+   false,
+   5),
   ('Premium', 40.00, '/month', 
    array['20 AI Podcast Generations', 'Full Library History Access', 'Ultra High Quality Audio', 'Priority Support'], 
    'car-outline', 
    array['#fbbf24', '#f59e0b'], 
-   true);
+   true,
+   20);
 
 -- 7. Trigger to create profile when auth.user created
 create function public.handle_new_user()
@@ -125,3 +129,13 @@ $$ language plpgsql security definer;
 create trigger on_subscription_change
   after insert or update or delete on public.user_subscriptions
   for each row execute procedure public.log_subscription_event();
+
+-- 9. Credit Management Function
+create or replace function public.decrement_credits(x_user_id uuid)
+returns void as $$
+begin
+  update public.user_subscriptions
+  set remaining_credits = remaining_credits - 1
+  where user_id = x_user_id and remaining_credits > 0;
+end;
+$$ language plpgsql security definer;

@@ -53,6 +53,9 @@ export default function PaywallScreen() {
             const endDate = new Date();
             endDate.setDate(startDate.getDate() + 30); // 30 Days from now
 
+            const selectedPlan = plans.find(p => p.id === planId);
+            const planCredits = selectedPlan?.credits || 0;
+
             const { error } = await supabase
                 .from('user_subscriptions')
                 .upsert({ 
@@ -60,7 +63,8 @@ export default function PaywallScreen() {
                     plan_id: planId, 
                     status: 'active',
                     start_date: startDate.toISOString(),
-                    end_date: endDate.toISOString()
+                    end_date: endDate.toISOString(),
+                    remaining_credits: planCredits
                 }, { onConflict: 'user_id' });
 
             if (error) throw error;

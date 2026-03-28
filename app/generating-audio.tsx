@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import Slider from '@react-native-community/slider';
 import { Audio } from 'expo-av';
+import { supabase } from '../services/supabase';
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -106,6 +107,9 @@ export default function GeneratingAudioScreen() {
       formData.append('maxWords', summaryWords.toString());
       formData.append('speed', voiceSpeed.toString());
       formData.append('voiceId', selectedVoice.id);
+      
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) formData.append('userId', user.id);
 
       const response = await fetch(`${API_BASE_URL}/summarize`, {
         method: 'POST',
@@ -121,9 +125,23 @@ export default function GeneratingAudioScreen() {
             playAudio(result.data.audioUrl);
         }
       } else {
-        const errMsg = result.error || 'Failed to generate summary.';
-        Alert.alert('Generation Note', errMsg);
-        router.back();
+        const errMsg = result.message || result.error || 'Failed to generate summary.';
+        if (result.error === 'out_of_credits') {
+            Alert.alert(
+                'Out of Credits', 
+                'You are out of credits as per your plan. Want to buy more? Click on the credit icon or upgrade your plan.',
+                [
+                    { text: 'Later', style: 'cancel', onPress: () => router.back() },
+                    { text: 'Upgrade', onPress: () => {
+                        router.back();
+                        router.push('/profile');
+                    }}
+                ]
+            );
+        } else {
+            Alert.alert('Generation Note', errMsg);
+            router.back();
+        }
       }
     } catch (err) {
       Alert.alert('Error', 'Network error. Check your connection to the Backend Server.');

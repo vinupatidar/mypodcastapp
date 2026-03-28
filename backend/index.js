@@ -8,11 +8,17 @@ const dotenv = require('dotenv');
 const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
+const { createClient } = require('@supabase/supabase-js');
 
 dotenv.config();
 
 const app = express();
 const port = parseInt(process.env.PORT, 10) || 5010;
+
+// Setup Supabase
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Setup OpenAI
 const openai = new OpenAI({
@@ -148,6 +154,27 @@ app.post('/summarize', upload.single('file'), async (req, res) => {
     const maxWords = parseInt(req.body.maxWords, 10) || 500;
     const speed = parseFloat(req.body.speed) || 1.0;
     const voiceId = req.body.voiceId || DEFAULT_VOICE_ID;
+    const userId = req.body.userId;
+
+    // 1. Credit Check Logic
+    if (userId) {
+        console.log(`💳 Checking credits for User: ${userId}`);
+        const { data: sub, error: subErr } = await supabase
+            .from('user_subscriptions')
+            .select('remaining_credits')
+            .eq('user_id', userId)
+            .single();
+
+        if (subErr || !sub) {
+            console.error('❌ Subscription not found for credit check:', subErr);
+            return res.status(403).json({ error: 'subscription_not_found', message: 'No active subscription found. Please subscribe to generate podcasts.' });
+        }
+
+        if (sub.remaining_credits <= 0) {
+            console.warn('⚠️ User out of credits:', userId);
+            return res.status(403).json({ error: 'out_of_credits', message: 'You are out of credits as per your plan. Please upgrade or buy more credits.' });
+        }
+    }
 
     let contentToSummarize = text || '';
 
@@ -240,6 +267,28 @@ app.post('/summarize', upload.single('file'), async (req, res) => {
     saveEpisode(newEpisode);
 
     res.json({ success: true, data: newEpisode });
+
+    // 4. Update Credits Logic
+    if (userId) {
+        console.log(`📉 Decrementing credits for User: ${userId}`);
+        const { error: updateErr } = await supabase.rpc('decrement_credits', { x_user_id: userId });
+        if (updateErr) {
+            // Fallback to manual update if RPC is not defined
+            console.warn('⚠️ RPC decrement_credits failed, attempting manual update', updateErr);
+            const { data: currentSub } = await supabase
+                .from('user_subscriptions')
+                .select('remaining_credits')
+                .eq('user_id', userId)
+                .single();
+            
+            if (currentSub) {
+                await supabase
+                    .from('user_subscriptions')
+                    .update({ remaining_credits: Math.max(0, currentSub.remaining_credits - 1) })
+                    .eq('user_id', userId);
+            }
+        }
+    }
 
   } catch (error) {
     console.error('❌ Summarization Error:', error);
