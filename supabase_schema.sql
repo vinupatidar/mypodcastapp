@@ -57,6 +57,8 @@ create policy "Users can update own profile." on profiles for update using (auth
 create policy "Plans are viewable by everyone." on subscription_plans for select using (true);
 
 create policy "Users can view their own subscription." on user_subscriptions for select using (auth.uid() = user_id);
+create policy "Users can insert their own subscription." on user_subscriptions for insert with check (auth.uid() = user_id);
+create policy "Users can update their own subscription." on user_subscriptions for update using (auth.uid() = user_id);
 create policy "Users can view their own subscription history." on subscription_history for select using (auth.uid() = user_id);
 
 -- 6. Insert Default Plans
