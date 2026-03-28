@@ -64,24 +64,48 @@ export default function HomeScreen() {
   const [selectedCategory, setSelectedCategory] = useState('Story Telling');
 
   useEffect(() => {
+    // Check if Supabase URL and Key are available
+    const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseAnonKey || supabaseUrl.includes('your-project-ref')) {
+        console.warn('Supabase credentials missing or invalid in .env');
+        setLoading(false);
+        return;
+    }
+
     // Initial Session Check
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (session) checkSubscription(session.user.id);
-      else setLoading(false);
-    });
+    const initializeAuth = async () => {
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            setSession(session);
+            if (session) {
+                await checkSubscription(session.user.id);
+            } else {
+                setLoading(false);
+            }
+        } catch (e) {
+            console.error('Session Initialization Error:', e);
+            setLoading(false);
+        }
+    };
+
+    initializeAuth();
 
     // Listen for Auth Changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      if (session) checkSubscription(session.user.id);
-      else {
+      if (session) {
+          checkSubscription(session.user.id);
+      } else {
         setHasSubscription(false);
         setLoading(false);
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+        subscription?.unsubscribe();
+    };
   }, []);
 
   const checkSubscription = async (userId: string) => {
