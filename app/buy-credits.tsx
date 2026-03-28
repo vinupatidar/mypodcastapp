@@ -100,7 +100,11 @@ export default function BuyCreditsScreen() {
                         <Ionicons name="star" size={40} color="#fbbf24" />
                     </View>
                     <Text style={styles.heroTitle}>Need More Generations?</Text>
-                    <Text style={styles.heroSubtitle}>Choose a credit pack that fits your needs. Credits never expire as long as your subscription is active.</Text>
+                    <Text style={styles.heroSubtitle}>Choose a credit pack that fits your needs.</Text>
+                    <View style={styles.disclaimerBox}>
+                        <Ionicons name="alert-circle" size={16} color="#ef4444" style={{ marginRight: 8 }} />
+                        <Text style={styles.disclaimerText}>Important: Purchased credits are valid until your current subscription expires and will NOT be forwarded to the next month.</Text>
+                    </View>
                 </View>
 
                 <View style={styles.packsContainer}>
@@ -175,6 +179,8 @@ const styles = StyleSheet.create({
     starCircle: { width: 80, height: 80, borderRadius: 40, backgroundColor: 'white', justifyContent: 'center', alignItems: 'center', shadowColor: '#fbbf24', shadowOpacity: 0.2, shadowRadius: 15, elevation: 5, marginBottom: 20 },
     heroTitle: { fontFamily: 'Inter_700Bold', fontSize: 24, color: Colors.light.onSurface, textAlign: 'center', marginBottom: 12 },
     heroSubtitle: { fontFamily: 'Inter_400Regular', fontSize: 14, color: Colors.light.onSurfaceVariant, textAlign: 'center', lineHeight: 22 },
+    disclaimerBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(239, 68, 68, 0.08)', paddingVertical: 10, paddingHorizontal: 16, borderRadius: 12, marginTop: 16 },
+    disclaimerText: { flex: 1, fontFamily: 'Inter_700Bold', fontSize: 11, color: '#ef4444', lineHeight: 16 },
     packsContainer: { paddingHorizontal: 20, gap: 20 },
     packCard: { borderRadius: 24, overflow: 'hidden', elevation: 4, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 10 },
     popularCard: { transform: [{ scale: 1.02 }], borderWidth: 2, borderColor: '#fbbf24' },
