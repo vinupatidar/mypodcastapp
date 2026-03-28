@@ -64,7 +64,7 @@ create policy "Users can update their own subscription." on user_subscriptions f
 create policy "Users can view their own subscription history." on subscription_history for select using (auth.uid() = user_id);
 
 -- 6. Insert Default Plans
-insert into subscription_plans (name, price, period, features, icon, gradient, is_best)
+insert into subscription_plans (name, price, period, features, icon, gradient, is_best, credits)
 values 
   ('Basic', 20.00, '/month', 
    array['5 AI Podcast Generations', '30 Days Library History', 'High Quality Audio'], 
