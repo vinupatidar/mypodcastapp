@@ -6,6 +6,7 @@ import { Colors } from '../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import Slider from '@react-native-community/slider';
+import * as DocumentPicker from 'expo-document-picker';
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -36,10 +37,11 @@ const VOICES = [
 
 /**
  * Main Home Dashboard for MyPodcast App
- * Swapped header order: User Name then Welcome Label.
+ * Implements real file selection with expo-document-picker.
  */
 export default function HomeScreen() {
   const [text, setText] = useState('');
+  const [selectedFile, setSelectedFile] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
   const [showOptions, setShowOptions] = useState(false);
   
   // Selection Modal State
@@ -65,6 +67,23 @@ export default function HomeScreen() {
     setPickerVisible(false);
   };
 
+  const pickDocument = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'],
+        copyToCacheDirectory: true,
+      });
+
+      if (!result.canceled) {
+          setSelectedFile(result.assets[0]);
+          // If a file is picked, we might want to clear text or just prefer it
+          console.log('Picked file:', result.assets[0].name);
+      }
+    } catch (err) {
+      console.error('Pick Document Error:', err);
+    }
+  };
+
   const currentPickerData = 
     pickerType === 'language' ? LANGUAGES : 
     pickerType === 'category' ? CATEGORIES : 
@@ -87,15 +106,29 @@ export default function HomeScreen() {
           <View style={styles.summarizeContainer}>
             <Text style={styles.instruction}>Upload a file or paste your script below to get started.</Text>
 
-            <TouchableOpacity style={styles.uploadCard}>
+            <TouchableOpacity style={styles.uploadCard} onPress={pickDocument}>
               <View style={styles.dashContainer}>
-                <View style={styles.uploadIconContainer}>
-                  <Ionicons name="document-text" size={32} color={Colors.light.primary} />
-                </View>
-                <Text style={styles.uploadTitle}>Upload Document</Text>
-                <Text style={styles.uploadSubtitle}>
-                  Drag or select PDF, Word or{'\n'}Text files to get started.
-                </Text>
+                {selectedFile ? (
+                    <>
+                        <View style={styles.uploadIconContainer}>
+                            <Ionicons name="checkmark-circle" size={32} color={Colors.light.primary} />
+                        </View>
+                        <Text style={styles.uploadTitle}>{selectedFile.name}</Text>
+                        <TouchableOpacity onPress={() => setSelectedFile(null)}>
+                            <Text style={styles.uploadSubtitle}>Tap to Change or Remove</Text>
+                        </TouchableOpacity>
+                    </>
+                ) : (
+                    <>
+                        <View style={styles.uploadIconContainer}>
+                            <Ionicons name="document-text" size={32} color={Colors.light.primary} />
+                        </View>
+                        <Text style={styles.uploadTitle}>Upload Document</Text>
+                        <Text style={styles.uploadSubtitle}>
+                            Drag or select PDF, Word or{'\n'}Text files to get started.
+                        </Text>
+                    </>
+                )}
               </View>
             </TouchableOpacity>
 
@@ -215,6 +248,9 @@ export default function HomeScreen() {
                                     pathname: '/generating-audio',
                                     params: { 
                                         text: text, 
+                                        fileUri: selectedFile?.uri,
+                                        fileName: selectedFile?.name,
+                                        fileType: selectedFile?.mimeType,
                                         language: selectedLanguage, 
                                         category: selectedCategory, 
                                         maxWords: summaryWords,
@@ -329,7 +365,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: Colors.light.onSurfaceVariant,
     letterSpacing: 2,
-    marginTop: 8, // Added margin from name above
+    marginTop: 8,
   },
   userNameTitle: {
     fontFamily: 'Inter_700Bold',
@@ -382,6 +418,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     color: Colors.light.onSurface,
     marginBottom: 8,
+    textAlign: 'center',
   },
   uploadSubtitle: {
     fontFamily: 'Inter_400Regular',
@@ -456,7 +493,7 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(26, 27, 31, 0.6)',
+    backgroundColor: 'rgba(26, 27, 31, 1)',
     justifyContent: 'flex-end',
   },
   dismissOverlay: {

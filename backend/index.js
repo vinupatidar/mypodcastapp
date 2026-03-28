@@ -30,7 +30,10 @@ const upload = multer({ dest: 'uploads/' });
  */
 app.post('/summarize', upload.single('file'), async (req, res) => {
   try {
-    const { text, category, maxWords } = req.body;
+    const text = req.body.text;
+    const category = req.body.category || 'General';
+    const maxWords = parseInt(req.body.maxWords, 10) || 500;
+    
     let contentToSummarize = text || '';
 
     // Handle file upload if present

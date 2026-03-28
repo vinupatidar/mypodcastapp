@@ -79,14 +79,30 @@ export default function GeneratingAudioScreen() {
   const generateContent = async () => {
     setIsGenerating(true);
     try {
+      const formData = new FormData();
+      
+      if (params.fileUri) {
+          // If a file was picked, append it to FormData
+          // In React Native, we need to cast to any for FormData file upload
+          formData.append('file', {
+              uri: params.fileUri,
+              name: params.fileName || 'document.pdf',
+              type: params.fileType || 'application/pdf'
+          } as any);
+      }
+
+      // Always include other params
+      if (params.text) formData.append('text', params.text as string);
+      formData.append('category', selectedCategory);
+      formData.append('maxWords', summaryWords.toString());
+
       const response = await fetch(`${API_BASE_URL}/summarize`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text: params.text,
-          category: selectedCategory,
-          maxWords: summaryWords
-        })
+        headers: {
+            'Accept': 'application/json',
+            // Note: Content-Type is set automatically for FormData
+        },
+        body: formData
       });
 
       const result = await response.json();
@@ -95,7 +111,7 @@ export default function GeneratingAudioScreen() {
         setVoiceScript(result.data.voice_script);
       } else {
         console.error('API Error:', result.error);
-        setSummary('Failed to generate summary. Please try again.');
+        setSummary('Failed to generate summary. Please check your OpenAI Key and Backend.');
       }
     } catch (err) {
       console.error('Fetch Error:', err);
