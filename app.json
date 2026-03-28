@@ -43,7 +43,21 @@
           }
         }
       ],
-      "react-native-iap"
+      [
+        "react-native-iap",
+        {
+          "paymentConfiguration": "both"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "kotlinVersion": "1.9.24",
+            "billingClientVersion": "7.1.1"
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
