@@ -13,7 +13,7 @@ const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
 const LANGUAGES = [
   'Hindi', 'English (US)', 'English (UK)', 'Spanish', 'French', 'German', 'Chinese (Mandarin)', 
   'Japanese', 'Korean', 'Arabic', 'Portuguese', 'Russian', 'Italian', 'Turkish', 'Dutch', 
-  'Polish', 'Swedish', 'Indonesian', 'Vietnamese', 'Thai', 'Greek', 'Bengali', 'Marathi', 
+  'Polish', 'Swedish', 'Indonesian', 'Vietnamese', 'Thai', 'Bengali', 'Marathi', 
   'Telugu', 'Tamil', 'Gujarati', 'Urdu', 'Kannada', 'Malayalam', 'Punjabi'
 ];
 
@@ -39,7 +39,7 @@ export default function HomeScreen() {
   const [text, setText] = useState('');
   const [selectedFile, setSelectedFile] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
   
-  // UI States (Using Views instead of problematic Modals)
+  // UI States
   const [showOptions, setShowOptions] = useState(false);
   const [pickerVisible, setPickerVisible] = useState(false);
   const [pickerType, setPickerType] = useState<'language' | 'category' | 'voice'>('language');
@@ -120,17 +120,6 @@ export default function HomeScreen() {
               </View>
             </TouchableOpacity>
 
-            <View style={styles.quickSelectors}>
-                <TouchableOpacity style={styles.miniPicker} onPress={() => openPicker('language')}>
-                    <Ionicons name="language" size={16} color={Colors.light.primary} />
-                    <Text style={styles.miniPickerText}>{selectedLanguage}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.miniPicker} onPress={() => openPicker('category')}>
-                    <Ionicons name="list" size={16} color={Colors.light.primary} />
-                    <Text style={styles.miniPickerText}>{selectedCategory}</Text>
-                </TouchableOpacity>
-            </View>
-
             <View style={styles.dividerContainer}>
                 <View style={[styles.divider, { backgroundColor: '#eef' }]} />
                 <Text style={styles.dividerText}>OR PASTE TEXT</Text>
@@ -167,13 +156,12 @@ export default function HomeScreen() {
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* REFINEMENT: USE ABSOLUTE VIEW OVERLAY INSTEAD OF NATIVE MODAL TO PREVENT STICKING */}
       {showOptions && (
         <View style={styles.absoluteOverlay}>
             <TouchableOpacity style={styles.flexOne} activeOpacity={1} onPress={() => setShowOptions(false)} />
             <View style={styles.customBottomSheet}>
                 <View style={styles.customHandle} />
-                <View style={[styles.sheetContent, { maxHeight: SCREEN_HEIGHT * 0.7 }]}>
+                <View style={[styles.sheetContent, { maxHeight: SCREEN_HEIGHT * 0.75 }]}>
                     <Text style={styles.sheetTitle}>Podcast Options</Text>
                     <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
                         <Text style={styles.label}>AI VOICE SPEAKER</Text>
@@ -204,6 +192,16 @@ export default function HomeScreen() {
                             minimumTrackTintColor={Colors.light.primary} thumbTintColor={Colors.light.primary} 
                         />
 
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 }}>
+                            <Text style={styles.label}>VOICE SPEED</Text>
+                            <Text style={[styles.label, { color: Colors.light.primary }]}>{voiceSpeed.toFixed(1)}x</Text>
+                        </View>
+                        <Slider 
+                            style={styles.slider} minimumValue={0.7} maximumValue={1.2} step={0.1} 
+                            value={voiceSpeed} onValueChange={setVoiceSpeed}
+                            minimumTrackTintColor={Colors.light.primary} thumbTintColor={Colors.light.primary} 
+                        />
+
                         <TouchableOpacity 
                             style={styles.startGenerationButton}
                             onPress={() => {
@@ -229,7 +227,6 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {/* REFINEMENT: PICKER OVERLAY */}
       {pickerVisible && (
         <View style={styles.absoluteOverlayHigher}>
             <TouchableOpacity style={styles.flexOne} activeOpacity={1} onPress={() => setPickerVisible(false)} />
@@ -292,9 +289,6 @@ const styles = StyleSheet.create({
   uploadIconContainer: { width: 50, height: 50, borderRadius: 25, backgroundColor: 'rgba(0, 88, 188, 0.05)', justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
   uploadTitle: { fontFamily: 'Inter_700Bold', fontSize: 18, color: Colors.light.onSurface, marginBottom: 4 },
   uploadSubtitle: { fontFamily: 'Inter_400Regular', fontSize: 12, color: Colors.light.onSurfaceVariant },
-  quickSelectors: { flexDirection: 'row', gap: 10, marginBottom: 20 },
-  miniPicker: { flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', padding: 14, borderRadius: 16, borderWidth: 1, borderColor: '#f0f0f0', gap: 8, elevation: 1 },
-  miniPickerText: { fontFamily: 'Inter_700Bold', fontSize: 12, color: Colors.light.onSurface },
   dividerContainer: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
   divider: { flex: 1, height: 1 },
   dividerText: { fontFamily: 'Inter_700Bold', fontSize: 10, color: '#bbb', marginHorizontal: 16, letterSpacing: 1 },
@@ -304,7 +298,6 @@ const styles = StyleSheet.create({
   generateButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 18, borderRadius: 24 },
   generateButtonText: { color: 'white', fontFamily: 'Inter_700Bold', fontSize: 18 },
   
-  // Custom Overlays for stability
   absoluteOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, justifyContent: 'flex-end' },
   absoluteOverlayHigher: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 2000, justifyContent: 'center', alignItems: 'center', padding: 20 },
   flexOne: { flex: 1 },
