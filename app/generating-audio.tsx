@@ -193,10 +193,11 @@ export default function GeneratingAudioScreen() {
     <SafeAreaView style={styles.masterContainer}>
       <View style={styles.container}>
         <View style={styles.navHeader}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color={Colors.light.primary} />
+          <TouchableOpacity onPress={() => router.replace('/')} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color={Colors.light.primary} />
+            <Text style={{ marginLeft: 8, color: Colors.light.primary, fontFamily: 'Inter_700Bold' }}>HOME</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>VoiceAI</Text>
+          <Text style={styles.headerTitle}>Podcasting...</Text>
           <TouchableOpacity style={styles.profileButtonMini}>
             <Image 
               source="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=100" 
@@ -297,8 +298,8 @@ export default function GeneratingAudioScreen() {
         </ScrollView>
 
         <View style={styles.tabBar}>
-            <TabItem icon="home" label="HOME" route="/" />
-            <TabItem icon="mic" label="LIBRARY" active />
+            <TabItem icon="home" label="HOME" active route="/" />
+            <TabItem icon="mic" label="LIBRARY" route="/library" />
             <TabItem icon="person" label="PROFILE" route="/profile" />
         </View>
       </View>
