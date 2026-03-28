@@ -112,16 +112,16 @@ export default function PaywallScreen() {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#103E5B' },
-    headerBackground: { height: SCREEN_HEIGHT * 0.33, backgroundColor: '#103E5B' },
-    headerCenteredContent: { alignItems: 'center', justifyContent: 'center', paddingTop: 10 },
-    userContainer: { alignItems: 'center', marginTop: 0 },
-    profileImageContainer: { width: 70, height: 70, borderRadius: 35, overflow: 'hidden', borderWidth: 3, borderColor: '#FF9494', marginBottom: 12 },
+    headerBackground: { height: SCREEN_HEIGHT * 0.28, backgroundColor: '#103E5B' },
+    headerCenteredContent: { alignItems: 'center', justifyContent: 'center', paddingTop: 0 },
+    userContainer: { alignItems: 'center', marginTop: -5 },
+    profileImageContainer: { width: 64, height: 64, borderRadius: 32, overflow: 'hidden', borderWidth: 3, borderColor: '#FF9494', marginBottom: 8 },
     profileImage: { width: '100%', height: '100%' },
     greetingText: { color: 'rgba(255,255,255,0.7)', fontSize: 13, fontFamily: 'Inter_400Regular' },
-    choosePlanTitle: { color: 'white', fontSize: 22, fontFamily: 'Inter_700Bold', marginTop: 4 },
+    choosePlanTitle: { color: 'white', fontSize: 20, fontFamily: 'Inter_700Bold', marginTop: 2 },
     
-    contentCard: { flex: 1, backgroundColor: 'white', borderTopLeftRadius: 40, borderTopRightRadius: 40, paddingHorizontal: 20, marginTop: -10 },
-    plansList: { paddingTop: 20 },
+    contentCard: { flex: 1, backgroundColor: 'white', borderTopLeftRadius: 40, borderTopRightRadius: 40, paddingHorizontal: 20, marginTop: -40 },
+    plansList: { paddingTop: 15 },
     planItem: { 
         flexDirection: 'row', 
         alignItems: 'center', 
