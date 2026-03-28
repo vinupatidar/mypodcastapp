@@ -260,7 +260,7 @@ export default function HomeScreen() {
                     {isConfirmed && <Ionicons name="checkmark" size={14} color="white" />}
                 </View>
                 <Text style={styles.confirmationText}>
-                    Please provide enough text or file data to summarize it properly and avoid wasting your generation credits. I confirm that I've provided sufficient details.
+                    I confirm that the provided content is sufficient for a high-quality summary. I understand that generation credits are non-refundable for incomplete or low-quality input.
                 </Text>
             </TouchableOpacity>
 
