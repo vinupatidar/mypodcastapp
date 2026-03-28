@@ -158,15 +158,21 @@ app.post('/summarize', upload.single('file'), async (req, res) => {
 
     // 1. Credit Check Logic
     if (userId) {
-        console.log(`💳 Checking credits for User: ${userId}`);
+        console.log(`💳 Checking real-time credits for User ID: ${userId}`);
         const { data: sub, error: subErr } = await supabase
             .from('user_subscriptions')
             .select('remaining_credits')
             .eq('user_id', userId)
-            .single();
+            .eq('status', 'active')
+            .maybeSingle();
 
-        if (subErr || !sub) {
-            console.error('❌ Subscription not found for credit check:', subErr);
+        if (subErr) {
+            console.error('⚠️ DB Error checking credits:', subErr);
+            return res.status(500).json({ error: 'db_error', message: 'Error verifying subscription. Please try again later.' });
+        }
+
+        if (!sub) {
+            console.error('❌ Active subscription not found for credit check in DB');
             return res.status(403).json({ error: 'subscription_not_found', message: 'No active subscription found. Please subscribe to generate podcasts.' });
         }
 
