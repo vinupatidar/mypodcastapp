@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, ActivityIndicator, Alert } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Image } from 'expo-image';
 import { Colors } from '../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { supabase } from '../services/supabase';
-import { Alert } from 'react-native';
 
 // Computer's Local IP for Physical Devices
 const API_BASE_URL = 'http://192.168.1.2:5010';
@@ -19,10 +19,12 @@ export default function LibraryScreen() {
   const [loading, setLoading] = useState(true);
   const [remainingCredits, setRemainingCredits] = useState(0);
 
-  useEffect(() => {
-     fetchEpisodes();
-     fetchCredits();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+        fetchCredits();
+        fetchEpisodes();
+    }, [])
+  );
 
   const fetchCredits = async () => {
     try {

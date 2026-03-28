@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, TextInput, KeyboardAvoidingView, Platform, Dimensions, FlatList, Animated, Alert, ActivityIndicator } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import Slider from '@react-native-community/slider';
 import * as DocumentPicker from 'expo-document-picker';
 import PaywallScreen from './paywall';
@@ -109,6 +110,14 @@ export default function HomeScreen() {
         subscription?.unsubscribe();
     };
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+        if (session?.user?.id) {
+            checkSubscription(session.user.id);
+        }
+    }, [session?.user?.id])
+  );
 
   const checkSubscription = async (userId: string) => {
     try {
