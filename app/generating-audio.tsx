@@ -9,12 +9,8 @@ import Slider from '@react-native-community/slider';
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
 
-// Local IP or localhost (10.0.2.2 for Android)
-const API_BASE_URL = Platform.select({
-  ios: 'http://localhost:5001',
-  android: 'http://10.0.2.2:5001',
-  default: 'http://localhost:5001'
-});
+// Computer's Local IP for Physical Devices
+const API_BASE_URL = 'http://192.168.1.2:5001';
 
 const LANGUAGES = [
   'English (US)', 'English (UK)', 'Hindi', 'Spanish', 'French', 'German', 'Chinese (Mandarin)', 
