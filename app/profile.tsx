@@ -389,7 +389,7 @@ const styles = StyleSheet.create({
     creditBadge: { 
         position: 'absolute',
         top: 0,
-        right: 0,
+        right: 24,
         flexDirection: 'row', 
         alignItems: 'center', 
         backgroundColor: 'white', 

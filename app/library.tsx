@@ -330,8 +330,8 @@ const styles = StyleSheet.create({
   },
   creditBadge: { 
     position: 'absolute',
-    top: -10,
-    right: 0,
+    top: 10,
+    right: 24,
     flexDirection: 'row', 
     alignItems: 'center', 
     backgroundColor: 'white', 
