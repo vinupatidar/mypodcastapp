@@ -89,24 +89,39 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
 
--- NEW: 8. Trigger to ARCHIVE old subscription to history when updated/deleted
-create or replace function public.archive_subscription_history()
+-- NEW: 8. Trigger to ARCHIVE/LOG all subscription changes (INSERT, UPDATE, DELETE)
+create or replace function public.log_subscription_event()
 returns trigger as $$
 declare
-    old_plan_name text;
-    old_plan_price numeric;
+    target_plan_id uuid;
+    plan_name text;
+    plan_price numeric;
 begin
-    -- Get old plan details before archiving
-    select name, price into old_plan_name, old_plan_price 
-    from subscription_plans where id = OLD.plan_id;
+    -- Determine which plan to log details for
+    if (TG_OP = 'DELETE') then
+        target_plan_id := OLD.plan_id;
+    else
+        target_plan_id := NEW.plan_id;
+    end if;
+
+    -- Get plan details
+    select name, price into plan_name, plan_price 
+    from subscription_plans where id = target_plan_id;
 
     insert into public.subscription_history (user_id, plan_name, plan_price, status, start_date, end_date)
-    values (OLD.user_id, old_plan_name, old_plan_price, OLD.status, OLD.start_date, now());
+    values (
+        case when TG_OP = 'DELETE' then OLD.user_id else NEW.user_id end,
+        plan_name,
+        plan_price,
+        case when TG_OP = 'DELETE' then 'deleted' when TG_OP = 'INSERT' then 'started' else 'updated' end,
+        case when TG_OP = 'DELETE' then OLD.start_date else NEW.start_date end,
+        now()
+    );
     
-    return OLD;
+    return NEW;
 end;
 $$ language plpgsql security definer;
 
-create trigger on_subscription_updated
-  before update or delete on public.user_subscriptions
-  for each row execute procedure public.archive_subscription_history();
+create trigger on_subscription_change
+  after insert or update or delete on public.user_subscriptions
+  for each row execute procedure public.log_subscription_event();

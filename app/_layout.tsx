@@ -30,10 +30,11 @@ export default function RootLayout() {
       <Stack
         screenOptions={{
           headerShown: false,
+          gestureEnabled: false, // LOCK gestures so user can't swipe away Paywall
           contentStyle: { backgroundColor: Colors.light.surface },
         }}
       >
-        <Stack.Screen name="index" />
+        <Stack.Screen name="index" options={{ gestureEnabled: false }} />
       </Stack>
     </>
   );

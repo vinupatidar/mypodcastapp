@@ -49,13 +49,18 @@ export default function PaywallScreen() {
         }
 
         try {
+            const startDate = new Date();
+            const endDate = new Date();
+            endDate.setDate(startDate.getDate() + 30); // 30 Days from now
+
             const { error } = await supabase
                 .from('user_subscriptions')
                 .upsert({ 
                     user_id: user.id, 
                     plan_id: planId, 
                     status: 'active',
-                    start_date: new Date().toISOString()
+                    start_date: startDate.toISOString(),
+                    end_date: endDate.toISOString()
                 }, { onConflict: 'user_id' });
 
             if (error) throw error;
