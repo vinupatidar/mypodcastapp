@@ -1,13 +1,20 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, Dimensions, Animated, Easing, ScrollView, Modal, FlatList, Pressable } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, Dimensions, Modal, FlatList, ActivityIndicator, Platform } from 'react-native';
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import { Image } from 'expo-image';
+import { router, useLocalSearchParams } from 'expo-router';
 import Slider from '@react-native-community/slider';
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
+
+// Local IP or localhost (10.0.2.2 for Android)
+const API_BASE_URL = Platform.select({
+  ios: 'http://localhost:5001',
+  android: 'http://10.0.2.2:5001',
+  default: 'http://localhost:5001'
+});
 
 const LANGUAGES = [
   'English (US)', 'English (UK)', 'Hindi', 'Spanish', 'French', 'German', 'Chinese (Mandarin)', 
@@ -34,39 +41,74 @@ const VOICES = [
   { id: 'jake', name: 'Jake — High Energy' }
 ];
 
+/**
+ * Generating Audio Screen
+ * Now handles live fetch from backend to generate content with OpenAI.
+ */
 export default function GeneratingAudioScreen() {
-  const [pulseAnim] = useState(new Animated.Value(1));
+  const params = useLocalSearchParams();
+  
+  // UI States
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [isGenerating, setIsGenerating] = useState(true);
   const [showOptions, setShowOptions] = useState(false);
+  
+  // Content States (populated by API)
+  const [summary, setSummary] = useState('');
+  const [voiceScript, setVoiceScript] = useState('');
+  
+  // Option States (Initially from params)
+  const [selectedVoice, setSelectedVoice] = useState(
+    VOICES.find(v => v.id === params.voiceId) || VOICES[0]
+  );
+  const [summaryWords, setSummaryWords] = useState(Number(params.maxWords) || 500);
+  const [voiceSpeed, setVoiceSpeed] = useState(Number(params.speed) || 1.0);
+  const [selectedLanguage, setSelectedLanguage] = useState((params.language as string) || 'English (US)');
+  const [selectedCategory, setSelectedCategory] = useState((params.category as string) || 'Story Telling');
+
   const [pickerVisible, setPickerVisible] = useState(false);
   const [pickerType, setPickerType] = useState<'language' | 'category' | 'voice'>('language');
 
-  // Generation Options State
-  const [selectedVoice, setSelectedVoice] = useState(VOICES[0]);
-  const [summaryWords, setSummaryWords] = useState(500);
-  const [voiceSpeed, setVoiceSpeed] = useState(1.0);
-  const [selectedLanguage, setSelectedLanguage] = useState('English (US)');
-  const [selectedCategory, setSelectedCategory] = useState('Story Telling');
-
-  const [generationKey, setGenerationKey] = useState(0);
-
   useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.1,
-          duration: 1000,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 1000,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-  }, [generationKey]);
+    generateContent();
+  }, []);
+
+  /**
+   * Primary API Call to Backend
+   */
+  const generateContent = async () => {
+    setIsGenerating(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/summarize`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: params.text,
+          category: selectedCategory,
+          maxWords: summaryWords
+        })
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        setSummary(result.data.summary);
+        setVoiceScript(result.data.voice_script);
+      } else {
+        console.error('API Error:', result.error);
+        setSummary('Failed to generate summary. Please try again.');
+      }
+    } catch (err) {
+      console.error('Fetch Error:', err);
+      setSummary('Network error. Check if backend is running on port 5001.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const startNewGeneration = () => {
+    setShowOptions(false);
+    generateContent();
+  };
 
   const openPicker = (type: 'language' | 'category' | 'voice') => {
     setPickerType(type);
@@ -80,20 +122,14 @@ export default function GeneratingAudioScreen() {
     setPickerVisible(false);
   };
 
-  const startNewGeneration = () => {
-    setShowOptions(false);
-    setGenerationKey(prev => prev + 1);
-  };
-
   const currentPickerData = 
     pickerType === 'language' ? LANGUAGES : 
     pickerType === 'category' ? CATEGORIES : 
     VOICES.map(v => v.name);
 
   return (
-    <View style={styles.masterContainer}>
-      <SafeAreaView style={styles.container}>
-        {/* Navigation Header */}
+    <SafeAreaView style={styles.masterContainer}>
+      <View style={styles.container}>
         <View style={styles.navHeader}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
             <Ionicons name="chevron-back" size={24} color={Colors.light.primary} />
@@ -108,45 +144,55 @@ export default function GeneratingAudioScreen() {
         </View>
 
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          <View style={styles.content} key={generationKey}>
+          <View style={styles.content}>
               <View style={styles.badge}>
-                  <Text style={styles.badgeText}>GENERATING AUDIO</Text>
+                  <Text style={styles.badgeText}>GENERATING AUDIO SESSION</Text>
               </View>
 
+              {/* Main Visualization Circle */}
               <View style={styles.vizWrapper}>
                   <View style={styles.outerCircle}>
                       <View style={styles.innerCircle}>
-                          <Animated.View style={[styles.waveformContainer, { transform: [{ scale: pulseAnim }] }]}>
-                              <View style={[styles.wave, { height: 40, opacity: 0.4 }]} />
-                              <View style={[styles.wave, { height: 60, opacity: 0.6 }]} />
-                              <View style={[styles.wave, { height: 80, opacity: 1, backgroundColor: Colors.light.primary }]} />
-                              <View style={[styles.wave, { height: 100, opacity: 1, backgroundColor: Colors.light.primary }]} />
-                              <View style={[styles.wave, { height: 80, opacity: 1, backgroundColor: Colors.light.primary }]} />
-                              <View style={[styles.wave, { height: 60, opacity: 0.6 }]} />
-                              <View style={[styles.wave, { height: 40, opacity: 0.4 }]} />
-                          </Animated.View>
-                          <Ionicons name="mic" size={20} color={Colors.light.primary} style={styles.micIcon} />
-                          <Text style={styles.vizLabel}>VOICE SYNTHESIS</Text>
+                          <View style={styles.waveformContainer}>
+                              {[...Array(isPlaying ? 8 : 4)].map((_, i) => (
+                                  <View 
+                                    key={i} 
+                                    style={[
+                                        styles.wave, 
+                                        { 
+                                            height: isPlaying ? 20 + Math.random() * 30 : 15,
+                                            backgroundColor: isPlaying ? Colors.light.primary : 'rgba(0, 88, 188, 0.2)'
+                                        }
+                                    ]} 
+                                  />
+                              ))}
+                          </View>
+                          <Ionicons 
+                            name="mic" 
+                            size={32} 
+                            color={isPlaying ? Colors.light.primary : Colors.light.onSurfaceVariant} 
+                            style={styles.micIcon} 
+                          />
+                          <Text style={styles.vizLabel}>{selectedVoice.name.split(' — ')[0].toUpperCase()}</Text>
                       </View>
                   </View>
               </View>
 
-              {/* Quick Actions (Pause and Regenerate) */}
+              {/* Quick Actions (Pause / Regenerate) */}
               <View style={styles.quickActions}>
-                  <TouchableOpacity style={styles.quickActionButton} activeOpacity={0.7}>
+                  <TouchableOpacity style={styles.quickActionButton} onPress={() => setIsPlaying(!isPlaying)}>
                       <LinearGradient
                           colors={Colors.light.signatureGradient}
                           style={styles.quickActionGradient}
                       >
-                          <Ionicons name="pause" size={24} color="white" />
+                          <Ionicons name={isPlaying ? "pause" : "play"} size={24} color="white" />
                       </LinearGradient>
-                      <Text style={styles.quickActionLabel}>PAUSE</Text>
+                      <Text style={styles.quickActionLabel}>{isPlaying ? "PAUSE" : "RESUME"}</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity 
                     style={styles.quickActionButton} 
                     onPress={() => setShowOptions(true)}
-                    activeOpacity={0.7}
                   >
                       <LinearGradient
                           colors={Colors.light.signatureGradient}
@@ -158,33 +204,47 @@ export default function GeneratingAudioScreen() {
                   </TouchableOpacity>
               </View>
 
+              {/* Summary Preview Section */}
               <View style={styles.previewSection}>
                   <Text style={styles.sectionTitle}>Summary Preview</Text>
                   <View style={styles.previewCard}>
-                      <Text style={styles.previewContent}>
-                          The latest research into neural voice synthesis suggests that emotional cadence can now be mapped with over 98% accuracy. 
-                          This generation session is applying a <Text style={styles.highlight}>{selectedVoice.name.split(' — ')[0]}</Text> tone with subtle emphasis on key technical breakthroughs. 
-                          The resulting audio will maintain a consistent atmospheric depth suitable for high-end editorial presentations. {'\n'}{'\n'}
-                          Our advanced summary engine is extracting the key pillars of your content to ensure a high-authority delivery. Feel free to pause and download the clip below.
-                      </Text>
-                      
-                      <View style={styles.processingBar}>
-                          <View style={styles.tokenCircle} />
-                          <Text style={styles.processingText}>Processing {summaryWords} words in {selectedLanguage}...</Text>
-                      </View>
+                      {isGenerating ? (
+                        <View style={{ paddingVertical: 40, alignItems: 'center' }}>
+                           <ActivityIndicator size="large" color={Colors.light.primary} />
+                           <Text style={[styles.processingText, { marginTop: 16 }]}>Generating Summary with AI...</Text>
+                        </View>
+                      ) : (
+                        <>
+                          <Text style={styles.previewContent}>
+                              {summary}
+                          </Text>
+                          
+                          <View style={styles.processingBar}>
+                              <Ionicons name="sparkles" size={16} color={Colors.light.primary} />
+                              <Text style={styles.processingText}>Generated in {selectedLanguage} for {selectedCategory}</Text>
+                          </View>
+
+                          {/* Hidden Voice Script Preview (Optional) */}
+                          <View style={styles.voiceScriptBadge}>
+                             <Ionicons name="recording" size={14} color="#666" />
+                             <Text style={styles.voiceScriptBadgeText}>Voice Script Optimized ⚡</Text>
+                          </View>
+                        </>
+                      )}
                   </View>
               </View>
           </View>
         </ScrollView>
 
+        {/* Bottom Navigation */}
         <View style={styles.tabBar}>
             <TabItem icon="home" label="HOME" route="/" />
             <TabItem icon="mic" label="LIBRARY" active />
             <TabItem icon="person" label="PROFILE" route="/profile" />
         </View>
-      </SafeAreaView>
+      </View>
 
-      {/* MODALS */}
+      {/* REGENERATION OPTIONS MODAL */}
       <Modal
         visible={showOptions}
         animationType="slide"
@@ -310,7 +370,7 @@ export default function GeneratingAudioScreen() {
             </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -442,12 +502,12 @@ const styles = StyleSheet.create({
       width: '100%',
       paddingHorizontal: 20,
       marginBottom: 32,
-      zIndex: 10, // Ensure it's interactive
+      zIndex: 10,
   },
   quickActionButton: {
       alignItems: 'center',
       gap: 8,
-      padding: 4, // Increase touch area
+      padding: 4,
   },
   quickActionGradient: {
       width: 56,
@@ -494,29 +554,35 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     marginBottom: 24,
   },
-  highlight: {
-    color: Colors.light.primary,
-    fontFamily: 'Inter_700Bold',
-  },
   processingBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-  },
-  tokenCircle: {
-      width: 40,
-      height: 24,
-      borderRadius: 12,
-      backgroundColor: 'rgba(0, 88, 188, 0.2)',
+    gap: 8,
   },
   processingText: {
     fontFamily: 'Inter_400Regular',
     fontSize: 14,
     color: Colors.light.onSurfaceVariant,
   },
+  voiceScriptBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
+    marginTop: 12,
+  },
+  voiceScriptBadgeText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 10,
+    color: '#666',
+  },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(26, 27, 31, 1)', // Darker overlay for focus
+    backgroundColor: 'rgba(26, 27, 31, 1)',
     justifyContent: 'flex-end',
   },
   dismissOverlay: {
@@ -679,13 +745,14 @@ const styles = StyleSheet.create({
   tabItem: {
     alignItems: 'center',
   },
-  activeTabLabel: {
-    color: Colors.light.primary,
-  },
   tabLabel: {
-    fontFamily: 'Inter_700Bold',
+    fontFamily: 'Inter_400Regular',
     fontSize: 10,
     marginTop: 4,
     color: Colors.light.onSurfaceVariant,
+  },
+  activeTabLabel: {
+    fontFamily: 'Inter_700Bold',
+    color: Colors.light.primary,
   },
 });

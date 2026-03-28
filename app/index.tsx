@@ -211,7 +211,18 @@ export default function HomeScreen() {
                             style={styles.startGenerationButton}
                             onPress={() => {
                                 setShowOptions(false);
-                                router.push('/generating-audio');
+                                router.push({
+                                    pathname: '/generating-audio',
+                                    params: { 
+                                        text: text, 
+                                        language: selectedLanguage, 
+                                        category: selectedCategory, 
+                                        maxWords: summaryWords,
+                                        speed: voiceSpeed,
+                                        voiceId: selectedVoice.id,
+                                        voiceName: selectedVoice.name
+                                    }
+                                });
                             }}
                         >
                             <LinearGradient
