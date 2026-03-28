@@ -119,23 +119,7 @@ export default function ProfileScreen() {
                 <View style={[styles.modalOverlay, { backgroundColor: '#103E5B' }]}>
                     <SafeAreaView style={{ flex: 1 }}>
                         <View style={styles.paywallHeader}>
-                            <View style={styles.paywallHeaderTop}>
-                                <TouchableOpacity onPress={() => setShowUpgradeModal(false)} style={styles.paywallBackBtn}>
-                                    <Ionicons name="arrow-back" size={24} color="white" />
-                                </TouchableOpacity>
-                                <TouchableOpacity style={styles.paywallMoreBtn}>
-                                    <Ionicons name="notifications" size={24} color="white" />
-                                    <View style={styles.paywallNotifBadge} />
-                                </TouchableOpacity>
-                            </View>
-
                             <View style={styles.paywallUserSection}>
-                                <View style={styles.paywallAvatarContainer}>
-                                    <Image 
-                                        source="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=100" 
-                                        style={styles.paywallAvatar}
-                                    />
-                                </View>
                                 <Text style={styles.paywallGreeting}>Hello, Vinu Patidar</Text>
                                 <Text style={styles.paywallTitle}>CHOOSE YOUR PLAN</Text>
                             </View>
@@ -261,16 +245,10 @@ const styles = StyleSheet.create({
     
     // PAYWALL-STYLED UPGRADE MODAL
     modalOverlay: { ...StyleSheet.absoluteFillObject, zIndex: 2000 },
-    paywallHeader: { height: SCREEN_HEIGHT * 0.28, paddingHorizontal: 20, paddingTop: 10 },
-    paywallHeaderTop: { flexDirection: 'row', justifyContent: 'space-between' },
-    paywallBackBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.1)', justifyContent: 'center', alignItems: 'center' },
-    paywallMoreBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
-    paywallNotifBadge: { position: 'absolute', top: 5, right: 8, width: 8, height: 8, borderRadius: 4, backgroundColor: '#FFD700', borderWidth: 1, borderColor: '#103E5B' },
-    paywallUserSection: { alignItems: 'center', marginTop: -5 },
-    paywallAvatarContainer: { width: 64, height: 64, borderRadius: 32, overflow: 'hidden', borderWidth: 3, borderColor: '#FF9494', marginBottom: 8 },
-    paywallAvatar: { width: '100%', height: '100%' },
-    paywallGreeting: { color: 'rgba(255,255,255,0.7)', fontSize: 13, fontFamily: 'Inter_400Regular' },
-    paywallTitle: { color: 'white', fontSize: 20, fontFamily: 'Inter_700Bold', marginTop: 2 },
+    paywallHeader: { height: SCREEN_HEIGHT * 0.28, paddingHorizontal: 20, paddingTop: 30, alignItems: 'center', justifyContent: 'center' },
+    paywallUserSection: { alignItems: 'center' },
+    paywallGreeting: { color: 'rgba(255,255,255,0.9)', fontSize: 20, fontFamily: 'Inter_700Bold' },
+    paywallTitle: { color: 'white', fontSize: 22, fontFamily: 'Inter_700Bold', marginTop: 4 },
     
     paywallContentCard: { flex: 1, backgroundColor: 'white', borderTopLeftRadius: 40, borderTopRightRadius: 40, paddingHorizontal: 20, marginTop: -40 },
     paywallScroll: { paddingTop: 24 },

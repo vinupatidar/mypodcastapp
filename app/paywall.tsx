@@ -39,12 +39,6 @@ export default function PaywallScreen() {
                 <SafeAreaView>
                     <View style={styles.headerCenteredContent}>
                         <View style={styles.userContainer}>
-                            <View style={styles.profileImageContainer}>
-                                <Image 
-                                    source="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=100" 
-                                    style={styles.profileImage}
-                                />
-                            </View>
                             <Text style={styles.greetingText}>Hello, Vinu Patidar</Text>
                             <Text style={styles.choosePlanTitle}>CHOOSE YOUR PLAN</Text>
                         </View>
@@ -101,11 +95,9 @@ const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#103E5B' },
     headerBackground: { height: SCREEN_HEIGHT * 0.28, backgroundColor: '#103E5B' },
     headerCenteredContent: { alignItems: 'center', justifyContent: 'center', paddingTop: 0 },
-    userContainer: { alignItems: 'center', marginTop: -5 },
-    profileImageContainer: { width: 64, height: 64, borderRadius: 32, overflow: 'hidden', borderWidth: 3, borderColor: '#FF9494', marginBottom: 8 },
-    profileImage: { width: '100%', height: '100%' },
-    greetingText: { color: 'rgba(255,255,255,0.7)', fontSize: 13, fontFamily: 'Inter_400Regular' },
-    choosePlanTitle: { color: 'white', fontSize: 20, fontFamily: 'Inter_700Bold', marginTop: 2 },
+    userContainer: { alignItems: 'center', marginTop: -15 },
+    greetingText: { color: 'rgba(255,255,255,0.9)', fontSize: 20, fontFamily: 'Inter_700Bold' },
+    choosePlanTitle: { color: 'white', fontSize: 22, fontFamily: 'Inter_700Bold', marginTop: 4 },
     
     contentCard: { flex: 1, backgroundColor: 'white', borderTopLeftRadius: 40, borderTopRightRadius: 40, paddingHorizontal: 20, marginTop: -40 },
     plansList: { paddingTop: 15 },
