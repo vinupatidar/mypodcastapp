@@ -120,17 +120,23 @@ export default function ProfileScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
+            <View style={styles.header}>
+                <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+                    <Ionicons name="arrow-back" size={24} color={Colors.light.onSurface} />
+                </TouchableOpacity>
+                <Text style={styles.headerTitle}>Profile</Text>
+                <TouchableOpacity 
+                    style={styles.creditBadge}
+                    onPress={() => Alert.alert('Credits', `You have ${remainingCredits} credits remaining. Want more? Upgrade your plan below.`)}
+                >
+                    <Ionicons name="star" size={14} color="#fbbf24" style={{ marginRight: 4 }} />
+                    <Text style={styles.creditText}>Credits: {remainingCredits}</Text>
+                </TouchableOpacity>
+            </View>
+
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
                 
                 <View style={styles.profileHeader}>
-                    <TouchableOpacity 
-                        style={styles.creditBadge}
-                        onPress={() => Alert.alert('Credits', `You have ${remainingCredits} credits remaining. Want more? Upgrade your plan below.`)}
-                    >
-                        <Ionicons name="star" size={14} color="#fbbf24" style={{ marginRight: 4 }} />
-                        <Text style={styles.creditText}>Credits: {remainingCredits}</Text>
-                    </TouchableOpacity>
-
                     <LinearGradient
                         colors={Colors.light.signatureGradient}
                         style={styles.avatarGradient}
@@ -315,7 +321,18 @@ function TabItem({ icon, label, active, route }: any) {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#faf9fe' },
-    scrollContent: { padding: 24 },
+    header: { 
+        flexDirection: 'row', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        paddingHorizontal: 24, 
+        paddingTop: 10,
+        paddingBottom: 10,
+        backgroundColor: '#faf9fe'
+    },
+    backButton: { width: 40, height: 40, justifyContent: 'center' },
+    headerTitle: { fontFamily: 'Inter_700Bold', fontSize: 20, color: Colors.light.onSurface },
+    scrollContent: { paddingHorizontal: 24, paddingBottom: 40 },
     profileHeader: { alignItems: 'center', marginVertical: 20 },
     avatarGradient: { width: 80, height: 80, borderRadius: 40, justifyContent: 'center', alignItems: 'center', marginBottom: 12, shadowColor: Colors.light.primary, shadowOpacity: 0.1, shadowRadius: 10, elevation: 4 },
     avatarText: { color: 'white', fontFamily: 'Inter_700Bold', fontSize: 24 },
@@ -387,9 +404,6 @@ const styles = StyleSheet.create({
     tabLabel: { fontFamily: 'Inter_400Regular', fontSize: 10, marginTop: 4, color: '#aaa' },
     activeTabLabel: { fontFamily: 'Inter_700Bold', color: Colors.light.primary },
     creditBadge: { 
-        position: 'absolute',
-        top: 0,
-        right: 24,
         flexDirection: 'row', 
         alignItems: 'center', 
         backgroundColor: 'white', 
