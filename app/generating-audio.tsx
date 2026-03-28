@@ -57,8 +57,9 @@ export default function GeneratingAudioScreen() {
   const [selectedVoice, setSelectedVoice] = useState(
     VOICES.find(v => v.id === params.voiceId) || VOICES[0]
   );
-  const [summaryWords, setSummaryWords] = useState(Number(params.maxWords) || 500);
-  const [voiceSpeed, setVoiceSpeed] = useState(Number(params.speed) || 1.0);
+  // Enforce clean defaults if params are missing or zero
+  const [summaryWords, setSummaryWords] = useState(params.maxWords ? Number(params.maxWords) : 500);
+  const [voiceSpeed, setVoiceSpeed] = useState(params.speed ? Number(params.speed) : 1.0);
   const [selectedLanguage, setSelectedLanguage] = useState((params.language as string) || 'Hindi');
   const [selectedCategory, setSelectedCategory] = useState((params.category as string) || 'Story Telling');
 
@@ -137,11 +138,11 @@ export default function GeneratingAudioScreen() {
         
         const { sound } = await Audio.Sound.createAsync(
             { uri: url },
-            { shouldPlay: true, rate: voiceSpeed, shouldCorrectPitch: true }
+            { shouldPlay: false, rate: voiceSpeed, shouldCorrectPitch: true }
         );
         
         soundRef.current = sound;
-        setIsPlaying(true);
+        setIsPlaying(false);
         
         sound.setOnPlaybackStatusUpdate((status) => {
             if (status.isLoaded && !status.isPlaying && status.didJustFinish) {
@@ -231,18 +232,26 @@ export default function GeneratingAudioScreen() {
               </View>
 
               <View style={styles.quickActions}>
-                  <TouchableOpacity style={styles.quickActionButton} onPress={togglePlayback} disabled={!audioUrl}>
-                      <LinearGradient colors={audioUrl ? Colors.light.signatureGradient : ['#ccc', '#ddd']} style={styles.quickActionGradient}>
+                  <TouchableOpacity 
+                      style={styles.quickActionButton} 
+                      onPress={togglePlayback} 
+                      disabled={isGenerating || !audioUrl}
+                  >
+                      <LinearGradient colors={(!isGenerating && audioUrl) ? Colors.light.signatureGradient : ['#ccc', '#ddd']} style={styles.quickActionGradient}>
                           <Ionicons name={isPlaying ? "pause" : "play"} size={24} color="white" />
                       </LinearGradient>
-                      <Text style={styles.quickActionLabel}>{isPlaying ? "PAUSE" : "PLAY"}</Text>
+                      <Text style={[styles.quickActionLabel, (isGenerating || !audioUrl) && { color: '#ccc' }]}>{isPlaying ? "PAUSE" : "PLAY"}</Text>
                   </TouchableOpacity>
 
-                  <TouchableOpacity style={styles.quickActionButton} onPress={() => setShowOptions(true)}>
-                      <LinearGradient colors={Colors.light.signatureGradient} style={styles.quickActionGradient}>
+                  <TouchableOpacity 
+                      style={styles.quickActionButton} 
+                      onPress={() => setShowOptions(true)}
+                      disabled={isGenerating}
+                  >
+                      <LinearGradient colors={!isGenerating ? Colors.light.signatureGradient : ['#ccc', '#ddd']} style={styles.quickActionGradient}>
                           <Ionicons name="refresh" size={24} color="white" />
                       </LinearGradient>
-                      <Text style={styles.quickActionLabel}>REGENERATE</Text>
+                      <Text style={[styles.quickActionLabel, isGenerating && { color: '#ccc' }]}>REGENERATE</Text>
                   </TouchableOpacity>
               </View>
 
@@ -303,6 +312,7 @@ export default function GeneratingAudioScreen() {
                             </View>
                         </View>
                         <Slider 
+                            key={`words-${summaryWords}-${showOptions}`}
                             style={styles.slider} 
                             minimumValue={100} 
                             maximumValue={1000} 
@@ -321,6 +331,7 @@ export default function GeneratingAudioScreen() {
                             </View>
                         </View>
                         <Slider 
+                            key={`speed-${voiceSpeed}-${showOptions}`}
                             style={styles.slider} 
                             minimumValue={0.5} 
                             maximumValue={2.0} 
