@@ -121,9 +121,9 @@ export default function ProfileScreen() {
                         colors={Colors.light.signatureGradient}
                         style={styles.avatarGradient}
                     >
-                        <Text style={styles.avatarText}>{profile?.full_name?.split(' ').map((n: string) => n[0]).join('') || 'U'}</Text>
+                        <Text style={styles.avatarText}>{(user?.user_metadata?.full_name || profile?.full_name || 'U').split(' ').map((n: string) => n[0]).join('')}</Text>
                     </LinearGradient>
-                    <Text style={styles.userName}>{profile?.full_name || 'MyPodcast User'}</Text>
+                    <Text style={styles.userName}>{user?.user_metadata?.full_name || profile?.full_name || ''}</Text>
                     <Text style={styles.userEmail}>{user?.email || 'N/A'}</Text>
                     
                     <TouchableOpacity style={styles.editProfileButton}>

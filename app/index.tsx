@@ -203,7 +203,7 @@ export default function HomeScreen() {
           
           <View style={styles.header}>
             <View>
-              <Text style={styles.userNameTitle}>{profile?.full_name || 'MyPodcast User'}</Text>
+              <Text style={styles.userNameTitle}>{session?.user?.user_metadata?.full_name || profile?.full_name || ''}</Text>
               <Text style={styles.headerWelcomeLabel}>LISTEN TO YOUR DOCUMENT SUMMARISE PODCAST</Text>
             </View>
           </View>
