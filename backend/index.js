@@ -179,16 +179,24 @@ app.post('/summarize', upload.single('file'), async (req, res) => {
 
     console.log(`🤖 Summarizing content (${language}) in style: ${category}...`);
 
-    // REFINEMENT: Explicit Language and Style instruction for OpenAI
+    // REFINEMENT: Explicit Language, Style and VALIDATION instruction for OpenAI
     const systemPrompt = `You are a professional podcast scriptwriter. 
-    Task: Summarize the provided content into a podcast format.
+    
+    VALIDATION RULE:
+    If the provided content is blank, consists only of greetings (e.g., "hi", "hello", "hey"), or contains random/insufficient text that cannot be summarized into a meaningful podcast format, you MUST NOT summarize it.
+    Instead, return a JSON object with exactly:
+    { "error": true, "message": "Please provide more details or a sufficient number of words for a proper podcast summary." }
+
+    GENERAL TASK:
+    If content is sufficient, summarize it into a podcast format.
     Style/Category: ${category} (Adjust tone, vocabulary, and pacing to match this style).
     Language: The entire response MUST be written in ${language}. 
     Length: Under ${maxWords} words.
     
-    Output Format: MUST be a valid JSON object with:
+    Output Format for valid summaries: MUST be a valid JSON object with:
     1. "summary": A clean editorial summary in ${language}.
-    2. "voice_script": The summary optimized for natural podcast speech in ${language}.`;
+    2. "voice_script": The summary optimized for natural podcast speech in ${language}.
+    3. "error": false`;
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
@@ -197,6 +205,12 @@ app.post('/summarize', upload.single('file'), async (req, res) => {
     });
 
     const responseData = JSON.parse(completion.choices[0].message.content);
+    
+    if (responseData.error) {
+      console.log(`⚠️ OpenAI rejected input: ${responseData.message}`);
+      return res.status(400).json({ error: responseData.message });
+    }
+
     console.log(`✅ OpenAI Summary complete in ${language}.`);
 
     // Generate Audio with ElevenLabs - Passing Speed

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, Dimensions, FlatList, ActivityIndicator, Platform } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, Dimensions, FlatList, ActivityIndicator, Platform, Alert } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '../constants/Colors';
@@ -121,10 +121,13 @@ export default function GeneratingAudioScreen() {
             playAudio(result.data.audioUrl);
         }
       } else {
-        setSummary('Failed to generate summary. Verify your API Keys in the Backend.');
+        const errMsg = result.error || 'Failed to generate summary.';
+        Alert.alert('Generation Note', errMsg);
+        router.back();
       }
     } catch (err) {
-      setSummary('Network error. Check your connection to the Backend Server.');
+      Alert.alert('Error', 'Network error. Check your connection to the Backend Server.');
+      router.back();
     } finally {
       setIsGenerating(false);
     }
