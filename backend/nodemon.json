@@ -11,5 +11,8 @@
     "index.js",
     "lib/"
   ],
-  "ext": "js,mjs,json"
+  "ext": "js,mjs,json",
+  "events": {
+    "restart": "lsof -ti:5010 | xargs kill -9 || true"
+  }
 }
