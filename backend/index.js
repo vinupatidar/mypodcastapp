@@ -19,12 +19,6 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// SARVAM AI (Commented out as requested)
-/*
-const SARVAM_API_KEY = process.env.SARVAM_API_KEY;
-const SARVAM_API_URL = "https://api.sarvam.ai/text-to-speech/stream";
-*/
-
 // ElevenLabs Configuration
 const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
 const ELEVEN_VOICE_ID = "21m00Tcm4TlvDq8ikWAM"; // Rachel - Default Voice
@@ -52,13 +46,15 @@ if (!fs.existsSync(DB_FILE)) {
 const upload = multer({ dest: 'uploads/' });
 
 /**
- * ElevenLabs TTS Integration
+ * ElevenLabs TTS Integration - UPDATED with better logging
  */
 async function generateElevenLabsTTS(text, filename) {
-  if (!ELEVENLABS_API_KEY) {
-      console.warn("⚠️ ELEVENLABS_API_KEY is missing in .env. Skipping audio generation.");
+  if (!ELEVENLABS_API_KEY || ELEVENLABS_API_KEY === 'your_elevenlabs_api_key_here') {
+      console.warn("⚠️ ELEVENLABS_API_KEY is invalid or missing in .env.");
       return null;
   }
+
+  console.log(`🎙️ Generating TTS for text (${text.length} chars) using ElevenLabs...`);
 
   try {
     const response = await axios({
@@ -70,10 +66,10 @@ async function generateElevenLabsTTS(text, filename) {
       },
       data: {
         text: text,
-        model_id: "eleven_monolingual_v1",
+        model_id: "eleven_multilingual_v2", // More robust model
         voice_settings: {
           stability: 0.5,
-          similarity_boost: 0.5
+          similarity_boost: 0.75
         }
       },
       responseType: 'stream'
@@ -84,11 +80,22 @@ async function generateElevenLabsTTS(text, filename) {
     response.data.pipe(writer);
 
     return new Promise((resolve, reject) => {
-      writer.on('finish', () => resolve(filename));
-      writer.on('error', reject);
+      writer.on('finish', () => {
+          console.log(`✅ TTS Generated: ${filename}`);
+          resolve(filename);
+      });
+      writer.on('error', (err) => {
+          console.error(`❌ Stream Save Error:`, err);
+          reject(err);
+      });
     });
   } catch (error) {
-    console.error('ElevenLabs Error:', error.response?.data?.toString() || error.message);
+    if (error.response && error.response.data) {
+        // Since responseType is 'stream', error data is also a stream
+        console.error('❌ ElevenLabs API Error Status:', error.response.status);
+    } else {
+        console.error('❌ ElevenLabs Error Message:', error.message);
+    }
     return null;
   }
 }
@@ -97,24 +104,32 @@ async function generateElevenLabsTTS(text, filename) {
  * Helper to Save Episode to local JSON DB
  */
 function saveEpisode(episode) {
-    const episodes = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
-    episodes.push(episode);
-    fs.writeFileSync(DB_FILE, JSON.stringify(episodes, null, 2));
+    try {
+        const episodes = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
+        episodes.push(episode);
+        fs.writeFileSync(DB_FILE, JSON.stringify(episodes, null, 2));
+    } catch (err) {
+        console.error('❌ DB Save Error:', err);
+    }
 }
 
 /**
  * Endpoint to Get All Saved Episodes
  */
 app.get('/episodes', (req, res) => {
-    const episodes = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
-    res.json({ success: true, data: episodes });
+    try {
+        const episodes = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
+        res.json({ success: true, data: episodes });
+    } catch (err) {
+        res.status(500).json({ success: false, error: 'Failed to fetch episodes' });
+    }
 });
 
 /**
  * Main Sumarization Endpoint
- * Generates summary with OpenAI and audio with ElevenLabs.
  */
 app.post('/summarize', upload.single('file'), async (req, res) => {
+  console.log(`⚡ Received summarize request for category: ${req.body.category}`);
   try {
     const text = req.body.text;
     const category = req.body.category || 'General';
@@ -124,25 +139,32 @@ app.post('/summarize', upload.single('file'), async (req, res) => {
 
     // Handle file upload
     if (req.file) {
+      console.log(`📄 Processing file: ${req.file.originalname}`);
       const filePath = req.file.path;
       const fileExt = path.extname(req.file.originalname).toLowerCase();
-      if (fileExt === '.pdf') {
-        const dataBuffer = fs.readFileSync(filePath);
-        const data = await pdf(dataBuffer);
-        contentToSummarize = data.text;
-      } else if (fileExt === '.docx') {
-        const data = await mammoth.extractRawText({ path: filePath });
-        contentToSummarize = data.value;
-      } else if (fileExt === '.txt') {
-        contentToSummarize = fs.readFileSync(filePath, 'utf8');
+      try {
+        if (fileExt === '.pdf') {
+            const dataBuffer = fs.readFileSync(filePath);
+            const data = await pdf(dataBuffer);
+            contentToSummarize = data.text;
+        } else if (fileExt === '.docx') {
+            const data = await mammoth.extractRawText({ path: filePath });
+            contentToSummarize = data.value;
+        } else if (fileExt === '.txt') {
+            contentToSummarize = fs.readFileSync(filePath, 'utf8');
+        }
+      } catch (e) {
+        console.error('❌ File Parsing Error:', e);
+      } finally {
+        fs.unlinkSync(filePath);
       }
-      fs.unlinkSync(filePath);
     }
 
-    if (!contentToSummarize) {
-      return res.status(400).json({ error: 'No content provided.' });
+    if (!contentToSummarize || contentToSummarize.trim().length === 0) {
+      return res.status(400).json({ error: 'No content provided or extracted after parsing.' });
     }
 
+    console.log(`🤖 Summarizing content with OpenAI...`);
     const systemPrompt = `You are an expert podcast scriptwriter. 
     Summarize the provided content into a podcast format for the category: ${category}.
     The summary must be under ${maxWords} words.
@@ -160,7 +182,8 @@ app.post('/summarize', upload.single('file'), async (req, res) => {
     });
 
     const responseData = JSON.parse(completion.choices[0].message.content);
-    
+    console.log(`✅ OpenAI Summary complete.`);
+
     // Generate Audio with ElevenLabs
     let audioUrl = null;
     let filename = `podcast_${Date.now()}.mp3`;
@@ -168,7 +191,12 @@ app.post('/summarize', upload.single('file'), async (req, res) => {
     
     if (resultFile) {
         const host = req.get('host');
+        // Check if host includes localhost and user wants physical device IP
+        // Usually req.get('host') is the IP address if coming from phone
         audioUrl = `http://${host}/outputs/${resultFile}`;
+        console.log(`🔗 Audio URL: ${audioUrl}`);
+    } else {
+        console.warn(`⚠️ Background audio generation failed.`);
     }
 
     // Persist Episode for Library
@@ -184,11 +212,11 @@ app.post('/summarize', upload.single('file'), async (req, res) => {
 
     res.json({
       success: true,
-      data: newEpisode // Return the full episode object
+      data: newEpisode 
     });
 
   } catch (error) {
-    console.error('Summarization Error:', error);
+    console.error('❌ Summarization Error:', error);
     res.status(500).json({ error: 'Failed to process.' });
   }
 });
@@ -196,5 +224,5 @@ app.post('/summarize', upload.single('file'), async (req, res) => {
 app.get('/health', (req, res) => res.json({ status: 'OK' }));
 
 app.listen(port, () => {
-  console.log(`Backend listening at http://localhost:${port}`);
+  console.log(`🚀 Backend listening at http://localhost:${port}`);
 });
