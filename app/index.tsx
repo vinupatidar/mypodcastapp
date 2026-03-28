@@ -117,7 +117,16 @@ export default function HomeScreen() {
         .eq('status', 'active');
       
       if (data && data.length > 0) {
-        setHasSubscription(true);
+        const sub = data[0];
+        const now = new Date();
+        const endDate = sub.end_date ? new Date(sub.end_date) : null;
+
+        if (endDate && now > endDate) {
+            console.log('Subscription expired on:', endDate);
+            setHasSubscription(false);
+        } else {
+            setHasSubscription(true);
+        }
       } else {
         setHasSubscription(false);
       }
