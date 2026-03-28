@@ -8,30 +8,34 @@ import { router } from 'expo-router';
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
 
-// SUBSCRIPTION DATA (Matched to user screenshot style)
+// SUBSCRIPTION DATA (Matched to Paywall Plans)
 const UPGRADE_PLANS = [
     {
-        id: 'yearly',
-        name: 'Yearly',
-        price: '₹500.00 /y',
-        subtitle: 'Pay for a year',
-        features: ['No ads, experience ad free app', 'View and manage unlimited documents', 'All pro tools'],
-        isBest: true
+        id: 'basic',
+        name: 'Basic',
+        price: '$20 /m',
+        subtitle: 'Start your journey',
+        features: ['5 AI Podcast Generations', '30 Days Library History', 'High Quality Audio'],
+        icon: 'bicycle-outline',
+        gradient: ['#4ade80', '#2dd4bf'],
+        isBest: false
     },
     {
-        id: 'monthly',
-        name: 'Monthly',
-        price: '₹70.00 /m',
-        subtitle: 'Pay monthly, cancel anytime',
-        features: ['Ad free experience', 'Access to all library features'],
-        isBest: false
+        id: 'premium',
+        name: 'Premium',
+        price: '$40 /m',
+        subtitle: 'Pro experience',
+        features: ['20 AI Podcast Generations', 'Full Library History Access', 'Ultra High Quality Audio', 'Priority Support'],
+        icon: 'car-outline',
+        gradient: ['#fbbf24', '#f59e0b'],
+        isBest: true
     }
 ];
 
 export default function ProfileScreen() {
     const [currentPlan, setCurrentPlan] = useState('Free Explorer');
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-    const [selectedUpgrade, setSelectedUpgrade] = useState('yearly');
+    const [selectedUpgrade, setSelectedUpgrade] = useState('premium');
 
     return (
         <SafeAreaView style={styles.container}>
@@ -110,73 +114,85 @@ export default function ProfileScreen() {
                 <View style={{ height: 100 }} />
             </ScrollView>
 
-            {/* UPGRADE MODAL - DARK THEMED AS PER SCREENSHOT */}
+            {/* UPGRADE MODAL - MATCHED TO PAYWALL DESIGN */}
             {showUpgradeModal && (
-                <View style={styles.modalOverlay}>
-                    <TouchableOpacity style={styles.flexOne} activeOpacity={1} onPress={() => setShowUpgradeModal(false)} />
-                    <View style={styles.darkSheet}>
-                        <View style={styles.darkSheetHeader}>
-                            <TouchableOpacity onPress={() => setShowUpgradeModal(false)} style={styles.closeModalBtn}>
-                                <Ionicons name="chevron-back" size={24} color="white" />
-                            </TouchableOpacity>
-                            <TouchableOpacity style={styles.moreOptionsBtn}>
-                                <Ionicons name="ellipsis-horizontal" size={24} color="white" />
-                            </TouchableOpacity>
-                        </View>
-
-                        <Text style={styles.modalTitle}>Choose a plan</Text>
-                        <Text style={styles.modalSubtitle}>All features, No limit</Text>
-
-                        <ScrollView style={styles.planScroll} showsVerticalScrollIndicator={false}>
-                            {UPGRADE_PLANS.map((plan) => (
-                                <TouchableOpacity 
-                                    key={plan.id}
-                                    style={[styles.planOptionCard, selectedUpgrade === plan.id && styles.planOptionCardActive]}
-                                    activeOpacity={0.8}
-                                    onPress={() => setSelectedUpgrade(plan.id)}
-                                >
-                                    <View style={styles.optionHeader}>
-                                        <View style={styles.radioRow}>
-                                            <View style={[styles.radioOuter, selectedUpgrade === plan.id && styles.radioOuterActive]}>
-                                                {selectedUpgrade === plan.id && <View style={styles.radioInner} />}
-                                            </View>
-                                            <View>
-                                                <Text style={styles.optionName}>{plan.name}</Text>
-                                                <Text style={styles.optionSubtitle}>{plan.subtitle}</Text>
-                                            </View>
-                                        </View>
-                                        <Text style={styles.optionPrice}>{plan.price}</Text>
-                                    </View>
-                                    
-                                    {selectedUpgrade === plan.id && (
-                                        <View style={styles.featuresBox}>
-                                            {plan.features.map((f, i) => (
-                                                <View key={i} style={styles.featureLine}>
-                                                    <View style={styles.bullet} />
-                                                    <Text style={styles.featureLineText}>{f}</Text>
-                                                </View>
-                                            ))}
-                                        </View>
-                                    )}
-
-                                    {plan.isBest && (
-                                        <View style={styles.bestBadge}>
-                                            <Ionicons name="star" size={14} color="white" />
-                                        </View>
-                                    )}
+                <View style={[styles.modalOverlay, { backgroundColor: '#103E5B' }]}>
+                    <SafeAreaView style={{ flex: 1 }}>
+                        <View style={styles.paywallHeader}>
+                            <View style={styles.paywallHeaderTop}>
+                                <TouchableOpacity onPress={() => setShowUpgradeModal(false)} style={styles.paywallBackBtn}>
+                                    <Ionicons name="arrow-back" size={24} color="white" />
                                 </TouchableOpacity>
-                            ))}
-                        </ScrollView>
+                                <TouchableOpacity style={styles.paywallMoreBtn}>
+                                    <Ionicons name="notifications" size={24} color="white" />
+                                    <View style={styles.paywallNotifBadge} />
+                                </TouchableOpacity>
+                            </View>
 
-                        <View style={styles.modalFooter}>
-                            <TouchableOpacity style={styles.paymentBtn} onPress={() => setShowUpgradeModal(false)}>
-                                <LinearGradient colors={['#3b82f6', '#2dd4bf']} start={{x:0, y:0}} end={{x:1, y:0}} style={styles.paymentGradient}>
-                                    <Text style={styles.paymentBtnText}>Make Payment</Text>
-                                </LinearGradient>
-                            </TouchableOpacity>
-                            <Text style={styles.modalFooterNote}>You can cancel the subscription anytime</Text>
+                            <View style={styles.paywallUserSection}>
+                                <View style={styles.paywallAvatarContainer}>
+                                    <Image 
+                                        source="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=100" 
+                                        style={styles.paywallAvatar}
+                                    />
+                                </View>
+                                <Text style={styles.paywallGreeting}>Hello, Vinu Patidar</Text>
+                                <Text style={styles.paywallTitle}>CHOOSE YOUR PLAN</Text>
+                            </View>
                         </View>
-                    </View>
+
+                        <View style={styles.paywallContentCard}>
+                            <ScrollView style={styles.paywallScroll} showsVerticalScrollIndicator={false}>
+                                {UPGRADE_PLANS.map((plan) => (
+                                    <TouchableOpacity 
+                                        key={plan.id}
+                                        style={[styles.paywallPlanItem, selectedUpgrade === plan.id && styles.paywallPlanItemActive]}
+                                        activeOpacity={0.8}
+                                        onPress={() => setSelectedUpgrade(plan.id)}
+                                    >
+                                        <LinearGradient
+                                            colors={(plan as any).gradient}
+                                            start={{ x: 0, y: 0 }}
+                                            end={{ x: 1, y: 1 }}
+                                            style={styles.paywallIconBox}
+                                        >
+                                            <Ionicons name={(plan as any).icon} size={28} color="white" />
+                                        </LinearGradient>
+                                        
+                                        <View style={styles.paywallPlanInfo}>
+                                            <Text style={styles.paywallPlanName}>{plan.name}</Text>
+                                            {plan.features.slice(0, 2).map((f, i) => (
+                                                <Text key={i} style={styles.paywallPlanFeature}>{f}</Text>
+                                            ))}
+                                            <Text style={[styles.paywallChooseLink, { color: selectedUpgrade === plan.id ? '#3b82f6' : '#888' }]}>
+                                                {selectedUpgrade === plan.id ? 'Selected ✓' : 'Choose Plan >'}
+                                            </Text>
+                                        </View>
+
+                                        <View style={styles.paywallPriceBox}>
+                                            <Text style={styles.paywallPriceValue}>{plan.price.split(' ')[0]}</Text>
+                                            <Text style={styles.paywallPricePeriod}>{plan.price.split(' ')[1]}</Text>
+                                        </View>
+                                    </TouchableOpacity>
+                                ))}
+
+                                <TouchableOpacity 
+                                    style={styles.paywallUpgradeBtn} 
+                                    onPress={() => {
+                                        setCurrentPlan(UPGRADE_PLANS.find(p => p.id === selectedUpgrade)?.name || 'Basic');
+                                        setShowUpgradeModal(false);
+                                    }}
+                                >
+                                    <LinearGradient colors={['#3b82f6', '#2dd4bf']} start={{x:0, y:0}} end={{x:1, y:0}} style={styles.paywallUpgradeGradient}>
+                                        <Text style={styles.paywallUpgradeText}>Make Payment</Text>
+                                    </LinearGradient>
+                                </TouchableOpacity>
+                                
+                                <Text style={styles.paywallFooterNote}>You can cancel the subscription anytime</Text>
+                                <View style={{ height: 40 }} />
+                            </ScrollView>
+                        </View>
+                    </SafeAreaView>
                 </View>
             )}
 
@@ -243,36 +259,50 @@ const styles = StyleSheet.create({
     settingLabel: { fontFamily: 'Inter_400Regular', fontSize: 15, color: '#333' },
     settingValue: { fontFamily: 'Inter_400Regular', fontSize: 14, color: '#aaa', marginRight: 8 },
     
-    // UPGRADE MODAL - DARK THEME
-    modalOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.8)', zIndex: 2000 },
-    flexOne: { flex: 1 },
-    darkSheet: { backgroundColor: '#131317', borderTopLeftRadius: 36, borderTopRightRadius: 36, height: SCREEN_HEIGHT * 0.85, paddingBottom: 40 },
-    darkSheetHeader: { flexDirection: 'row', justifyContent: 'space-between', padding: 24, paddingBottom: 10 },
-    closeModalBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
-    moreOptionsBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
-    modalTitle: { color: 'white', fontFamily: 'Inter_700Bold', fontSize: 32, paddingHorizontal: 30 },
-    modalSubtitle: { color: '#888', fontFamily: 'Inter_400Regular', fontSize: 16, paddingHorizontal: 30, marginTop: 4, marginBottom: 30 },
-    planScroll: { flex: 1, paddingHorizontal: 24 },
-    planOptionCard: { backgroundColor: '#1e1e24', borderRadius: 24, padding: 24, marginBottom: 20, borderWidth: 1, borderColor: '#333', overflow: 'hidden' },
-    planOptionCardActive: { borderColor: Colors.light.primary, backgroundColor: '#1c1c2b' },
-    optionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-    radioRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-    radioOuter: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: '#555', justifyContent: 'center', alignItems: 'center' },
-    radioOuterActive: { borderColor: Colors.light.primary },
-    radioInner: { width: 12, height: 12, borderRadius: 6, backgroundColor: Colors.light.primary },
-    optionName: { color: 'white', fontFamily: 'Inter_700Bold', fontSize: 18 },
-    optionSubtitle: { color: '#888', fontSize: 12, marginTop: 2 },
-    optionPrice: { color: 'white', fontFamily: 'Inter_700Bold', fontSize: 16 },
-    featuresBox: { marginTop: 20, paddingTop: 20, borderTopWidth: 1, borderTopColor: '#333', gap: 12 },
-    featureLine: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-    bullet: { width: 4, height: 4, borderRadius: 2, backgroundColor: '#888' },
-    featureLineText: { color: '#ddd', fontSize: 13, fontFamily: 'Inter_400Regular' },
-    bestBadge: { position: 'absolute', top: 0, right: 0, width: 40, height: 40, backgroundColor: Colors.light.primary, borderBottomLeftRadius: 40, alignItems: 'flex-end', padding: 8 },
-    modalFooter: { padding: 30, gap: 16 },
-    paymentBtn: { width: '100%', height: 64, borderRadius: 32, overflow: 'hidden' },
-    paymentGradient: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    paymentBtnText: { color: 'white', fontFamily: 'Inter_700Bold', fontSize: 18 },
-    modalFooterNote: { color: '#888', textAlign: 'center', fontSize: 12 },
+    // PAYWALL-STYLED UPGRADE MODAL
+    modalOverlay: { ...StyleSheet.absoluteFillObject, zIndex: 2000 },
+    paywallHeader: { height: SCREEN_HEIGHT * 0.28, paddingHorizontal: 20, paddingTop: 10 },
+    paywallHeaderTop: { flexDirection: 'row', justifyContent: 'space-between' },
+    paywallBackBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.1)', justifyContent: 'center', alignItems: 'center' },
+    paywallMoreBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
+    paywallNotifBadge: { position: 'absolute', top: 5, right: 8, width: 8, height: 8, borderRadius: 4, backgroundColor: '#FFD700', borderWidth: 1, borderColor: '#103E5B' },
+    paywallUserSection: { alignItems: 'center', marginTop: -5 },
+    paywallAvatarContainer: { width: 64, height: 64, borderRadius: 32, overflow: 'hidden', borderWidth: 3, borderColor: '#FF9494', marginBottom: 8 },
+    paywallAvatar: { width: '100%', height: '100%' },
+    paywallGreeting: { color: 'rgba(255,255,255,0.7)', fontSize: 13, fontFamily: 'Inter_400Regular' },
+    paywallTitle: { color: 'white', fontSize: 20, fontFamily: 'Inter_700Bold', marginTop: 2 },
+    
+    paywallContentCard: { flex: 1, backgroundColor: 'white', borderTopLeftRadius: 40, borderTopRightRadius: 40, paddingHorizontal: 20, marginTop: -40 },
+    paywallScroll: { paddingTop: 24 },
+    paywallPlanItem: { 
+        flexDirection: 'row', 
+        alignItems: 'center', 
+        backgroundColor: 'white', 
+        borderRadius: 24, 
+        padding: 16, 
+        marginBottom: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+        elevation: 4,
+        borderWidth: 2,
+        borderColor: 'transparent'
+    },
+    paywallPlanItemActive: { borderColor: '#3b82f6', backgroundColor: '#f0f9ff' },
+    paywallIconBox: { width: 70, height: 120, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
+    paywallPlanInfo: { flex: 1, paddingHorizontal: 16 },
+    paywallPlanName: { fontSize: 18, fontFamily: 'Inter_700Bold', color: '#111', marginBottom: 8 },
+    paywallPlanFeature: { fontSize: 12, color: '#888', marginBottom: 4, fontFamily: 'Inter_400Regular' },
+    paywallChooseLink: { fontSize: 12, marginTop: 8, fontFamily: 'Inter_700Bold', alignSelf: 'flex-end' },
+    paywallPriceBox: { alignItems: 'flex-end' },
+    paywallPriceValue: { fontSize: 24, fontFamily: 'Inter_700Bold', color: '#111' },
+    paywallPricePeriod: { fontSize: 12, color: '#888' },
+    
+    paywallUpgradeBtn: { width: '100%', height: 64, borderRadius: 32, overflow: 'hidden', marginTop: 10, marginBottom: 15 },
+    paywallUpgradeGradient: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    paywallUpgradeText: { color: 'white', fontFamily: 'Inter_700Bold', fontSize: 18 },
+    paywallFooterNote: { color: '#888', textAlign: 'center', fontSize: 12, marginBottom: 20 },
     
     tabBar: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 75, backgroundColor: 'white', flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', paddingBottom: 15, borderTopWidth: 1, borderTopColor: '#f0f0f0' },
     tabItem: { alignItems: 'center' },
