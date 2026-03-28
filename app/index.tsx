@@ -49,6 +49,7 @@ export default function HomeScreen() {
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [hasSubscription, setHasSubscription] = useState(false);
+  const [profile, setProfile] = useState<any>(null);
   
   // UI States
   const [showOptions, setShowOptions] = useState(false);
@@ -96,6 +97,10 @@ export default function HomeScreen() {
       } else {
         setHasSubscription(false);
       }
+
+      // Fetch Profile as well
+      const { data: prof } = await supabase.from('profiles').select('*').eq('id', userId).single();
+      if (prof) setProfile(prof);
     } catch (e) {
       console.error('Subscription Check Error:', e);
       setHasSubscription(false);
@@ -167,7 +172,7 @@ export default function HomeScreen() {
           
           <View style={styles.header}>
             <View>
-              <Text style={styles.userNameTitle}>Vinu Patidar</Text>
+              <Text style={styles.userNameTitle}>{profile?.full_name || 'MyPodcast User'}</Text>
               <Text style={styles.headerWelcomeLabel}>LISTEN TO YOUR DOCUMENT SUMMARISE PODCAST</Text>
             </View>
           </View>
