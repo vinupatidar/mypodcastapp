@@ -46,11 +46,7 @@ export default function PaywallScreen() {
             {/* Header with Background Color matched to Image */}
             <View style={styles.headerBackground}>
                 <SafeAreaView>
-                    <View style={styles.headerContent}>
-                        <TouchableOpacity style={styles.backButton}>
-                            <Ionicons name="arrow-back" size={24} color="white" />
-                        </TouchableOpacity>
-                        
+                    <View style={styles.headerCenteredContent}>
                         <View style={styles.userContainer}>
                             <View style={styles.profileImageContainer}>
                                 <Image 
@@ -61,11 +57,6 @@ export default function PaywallScreen() {
                             <Text style={styles.greetingText}>Hello, Vinu Patidar</Text>
                             <Text style={styles.choosePlanTitle}>CHOOSE YOUR PLAN</Text>
                         </View>
-
-                        <TouchableOpacity style={styles.notificationBtn}>
-                            <Ionicons name="notifications" size={24} color="white" />
-                            <View style={styles.notifBadge} />
-                        </TouchableOpacity>
                     </View>
                 </SafeAreaView>
             </View>
@@ -121,19 +112,16 @@ export default function PaywallScreen() {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#103E5B' },
-    headerBackground: { height: SCREEN_HEIGHT * 0.4, backgroundColor: '#103E5B' },
-    headerContent: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 10 },
-    backButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.1)', justifyContent: 'center', alignItems: 'center' },
-    notificationBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
-    notifBadge: { position: 'absolute', top: 5, right: 8, width: 8, height: 8, borderRadius: 4, backgroundColor: '#FFD700', borderWidth: 1, borderColor: '#103E5B' },
-    userContainer: { alignItems: 'center', marginTop: 10 },
-    profileImageContainer: { width: 70, height: 70, borderRadius: 35, overflow: 'hidden', borderWidth: 3, borderColor: '#FF9494', marginBottom: 16 },
+    headerBackground: { height: SCREEN_HEIGHT * 0.33, backgroundColor: '#103E5B' },
+    headerCenteredContent: { alignItems: 'center', justifyContent: 'center', paddingTop: 10 },
+    userContainer: { alignItems: 'center', marginTop: 0 },
+    profileImageContainer: { width: 70, height: 70, borderRadius: 35, overflow: 'hidden', borderWidth: 3, borderColor: '#FF9494', marginBottom: 12 },
     profileImage: { width: '100%', height: '100%' },
-    greetingText: { color: 'rgba(255,255,255,0.7)', fontSize: 14, fontFamily: 'Inter_400Regular' },
-    choosePlanTitle: { color: 'white', fontSize: 24, fontFamily: 'Inter_700Bold', marginTop: 8 },
+    greetingText: { color: 'rgba(255,255,255,0.7)', fontSize: 13, fontFamily: 'Inter_400Regular' },
+    choosePlanTitle: { color: 'white', fontSize: 22, fontFamily: 'Inter_700Bold', marginTop: 4 },
     
-    contentCard: { flex: 1, backgroundColor: 'white', borderTopLeftRadius: 40, borderTopRightRadius: 40, paddingHorizontal: 20 },
-    plansList: { paddingTop: 30 },
+    contentCard: { flex: 1, backgroundColor: 'white', borderTopLeftRadius: 40, borderTopRightRadius: 40, paddingHorizontal: 20, marginTop: -10 },
+    plansList: { paddingTop: 20 },
     planItem: { 
         flexDirection: 'row', 
         alignItems: 'center', 
