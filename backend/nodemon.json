@@ -1,7 +1,15 @@
 {
+  "verbose": true,
   "ignore": [
     "outputs/*",
     "db/*",
-    "uploads/*"
-  ]
+    "uploads/*",
+    "*.mp3",
+    "*.json"
+  ],
+  "watch": [
+    "index.js",
+    "lib/"
+  ],
+  "ext": "js,mjs,json"
 }
