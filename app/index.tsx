@@ -110,19 +110,18 @@ export default function HomeScreen() {
 
   const checkSubscription = async (userId: string) => {
     try {
-      const { data } = await supabase
-        .from('user_subscriptions')
-        .select('*, subscription_plans(*)')
-        .eq('user_id', userId)
-        .eq('status', 'active');
+      // Parallelize profile and subscription checks
+      const [subRes, profRes] = await Promise.all([
+        supabase.from('user_subscriptions').select('*, subscription_plans(*)').eq('user_id', userId).eq('status', 'active').maybeSingle(),
+        supabase.from('profiles').select('*').eq('id', userId).single()
+      ]);
       
-      if (data && data.length > 0) {
-        const sub = data[0];
+      const sub = subRes.data;
+      if (sub && sub.subscription_plans) {
         const now = new Date();
         const endDate = sub.end_date ? new Date(sub.end_date) : null;
 
         if (endDate && now > endDate) {
-            console.log('Subscription expired on:', endDate);
             setHasSubscription(false);
         } else {
             setHasSubscription(true);
@@ -131,9 +130,7 @@ export default function HomeScreen() {
         setHasSubscription(false);
       }
 
-      // Fetch Profile as well
-      const { data: prof } = await supabase.from('profiles').select('*').eq('id', userId).single();
-      if (prof) setProfile(prof);
+      if (profRes.data) setProfile(profRes.data);
     } catch (e) {
       console.error('Subscription Check Error:', e);
       setHasSubscription(false);
@@ -182,13 +179,6 @@ export default function HomeScreen() {
     pickerType === 'category' ? CATEGORIES : 
     VOICES.map(v => v.name);
 
-  if (loading) {
-    return (
-        <View style={{ flex: 1, backgroundColor: '#103E5B', justifyContent: 'center', alignItems: 'center' }}>
-            <ActivityIndicator size="large" color="#3b82f6" />
-        </View>
-    );
-  }
 
   if (!session) {
       return <AuthScreen />;
