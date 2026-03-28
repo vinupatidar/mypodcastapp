@@ -119,8 +119,13 @@ export default function ProfileScreen() {
                 <View style={[styles.modalOverlay, { backgroundColor: '#103E5B' }]}>
                     <SafeAreaView style={{ flex: 1 }}>
                         <View style={styles.paywallHeader}>
-                            <View style={styles.paywallUserSection}>
+                            <View style={styles.paywallTopGreetings}>
                                 <Text style={styles.paywallGreeting}>Hello, Vinu Patidar</Text>
+                                <TouchableOpacity onPress={() => setShowUpgradeModal(false)} style={styles.paywallBackBtnSmall}>
+                                    <Ionicons name="close" size={24} color="white" />
+                                </TouchableOpacity>
+                            </View>
+                            <View style={styles.paywallUserSection}>
                                 <Text style={styles.paywallTitle}>CHOOSE YOUR PLAN</Text>
                             </View>
                         </View>
@@ -245,10 +250,12 @@ const styles = StyleSheet.create({
     
     // PAYWALL-STYLED UPGRADE MODAL
     modalOverlay: { ...StyleSheet.absoluteFillObject, zIndex: 2000 },
-    paywallHeader: { height: SCREEN_HEIGHT * 0.28, paddingHorizontal: 20, paddingTop: 30, alignItems: 'center', justifyContent: 'center' },
+    paywallHeader: { height: SCREEN_HEIGHT * 0.28, paddingHorizontal: 20, paddingTop: 20, justifyContent: 'space-between', paddingBottom: 60 },
+    paywallTopGreetings: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    paywallBackBtnSmall: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.1)', justifyContent: 'center', alignItems: 'center' },
     paywallUserSection: { alignItems: 'center' },
-    paywallGreeting: { color: 'rgba(255,255,255,0.9)', fontSize: 20, fontFamily: 'Inter_700Bold' },
-    paywallTitle: { color: 'white', fontSize: 22, fontFamily: 'Inter_700Bold', marginTop: 4 },
+    paywallGreeting: { color: 'rgba(255,255,255,0.9)', fontSize: 18, fontFamily: 'Inter_700Bold' },
+    paywallTitle: { color: 'white', fontSize: 22, fontFamily: 'Inter_700Bold' },
     
     paywallContentCard: { flex: 1, backgroundColor: 'white', borderTopLeftRadius: 40, borderTopRightRadius: 40, paddingHorizontal: 20, marginTop: -40 },
     paywallScroll: { paddingTop: 24 },
