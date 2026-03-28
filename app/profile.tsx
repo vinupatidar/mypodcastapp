@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, Dimensions, Animated, Platform } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, Dimensions, Platform } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '../constants/Colors';
@@ -8,35 +8,30 @@ import { router } from 'expo-router';
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
 
-const PLANS = [
+// SUBSCRIPTION DATA (Matched to user screenshot style)
+const UPGRADE_PLANS = [
     {
-        id: 'express',
-        name: 'Express Plan',
-        price: '$20',
-        period: '/month',
-        features: ['5 AI Podcast Generations', '30 Days Library History', 'High Quality Audio', 'Standard Support'],
-        gradient: ['#6366f1', '#a855f7'],
-        color: '#6366f1'
+        id: 'yearly',
+        name: 'Yearly',
+        price: '₹500.00 /y',
+        subtitle: 'Pay for a year',
+        features: ['No ads, experience ad free app', 'View and manage unlimited documents', 'All pro tools'],
+        isBest: true
     },
     {
-        id: 'pro',
-        name: 'Professional Plan',
-        price: '$40',
-        period: '/month',
-        features: ['20 AI Podcast Generations', 'Full Library History Access', 'Ultra High Quality Audio', 'Priority 24/7 Support', 'Custom Voice Control'],
-        gradient: ['#1e293b', '#334155'], // Professional dark theme
-        color: '#1e293b'
+        id: 'monthly',
+        name: 'Monthly',
+        price: '₹70.00 /m',
+        subtitle: 'Pay monthly, cancel anytime',
+        features: ['Ad free experience', 'Access to all library features'],
+        isBest: false
     }
 ];
 
 export default function ProfileScreen() {
-    const [selectedPlan, setSelectedPlan] = useState<any>(null);
-    const [showPlanDetails, setShowPlanDetails] = useState(false);
-
-    const openPlanDetails = (plan: any) => {
-        setSelectedPlan(plan);
-        setShowPlanDetails(true);
-    };
+    const [currentPlan, setCurrentPlan] = useState('Free Explorer');
+    const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+    const [selectedUpgrade, setSelectedUpgrade] = useState('yearly');
 
     return (
         <SafeAreaView style={styles.container}>
@@ -58,38 +53,30 @@ export default function ProfileScreen() {
                     </TouchableOpacity>
                 </View>
 
-                {/* Subscription Banners */}
-                <Text style={styles.sectionTitle}>Choose Your Plan</Text>
-                <View style={styles.subscriptionContainer}>
-                    {PLANS.map((plan) => (
-                        <TouchableOpacity 
-                            key={plan.id}
-                            style={styles.planCardContainer}
-                            activeOpacity={0.9}
-                            onPress={() => openPlanDetails(plan)}
-                        >
-                            <LinearGradient
-                                colors={plan.gradient}
-                                start={{ x: 0, y: 0 }}
-                                end={{ x: 1, y: 1 }}
-                                style={styles.planCard}
-                            >
-                                <View style={styles.planCardHeader}>
-                                    <View>
-                                        <Text style={styles.planName}>{plan.name}</Text>
-                                        <Text style={styles.planPriceText}>{plan.price}<Text style={styles.planPeriodText}>{plan.period}</Text></Text>
-                                    </View>
-                                    <View style={styles.planIconCircle}>
-                                        <Ionicons name={plan.id === 'pro' ? "diamond" : "flash"} size={20} color="white" />
-                                    </View>
-                                </View>
-                                <View style={styles.planCardFooter}>
-                                    <Text style={styles.viewDetailsText}>View Details</Text>
-                                    <Ionicons name="arrow-forward" size={14} color="white" />
-                                </View>
-                            </LinearGradient>
+                {/* CURRENT PLAN - BLUE BANNER */}
+                <View style={styles.currentPlanSection}>
+                    <Text style={styles.sectionTitle}>Your Subscription</Text>
+                    <LinearGradient
+                        colors={['#0058bc', '#0072ff']}
+                        style={styles.currentPlanCard}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                    >
+                        <View style={styles.planInfo}>
+                            <View style={styles.planIconCircle}>
+                                <Ionicons name="crown" size={24} color="white" />
+                            </View>
+                            <View>
+                                <Text style={styles.planBadge}>ACTIVE PLAN</Text>
+                                <Text style={styles.currentPlanName}>{currentPlan}</Text>
+                            </View>
+                        </View>
+                        
+                        <TouchableOpacity style={styles.upgradeBtn} onPress={() => setShowUpgradeModal(true)}>
+                            <Text style={styles.upgradeBtnText}>Upgrade Plan</Text>
+                            <Ionicons name="sparkles" size={14} color={Colors.light.primary} />
                         </TouchableOpacity>
-                    ))}
+                    </LinearGradient>
                 </View>
 
                 {/* Settings Section */}
@@ -123,34 +110,71 @@ export default function ProfileScreen() {
                 <View style={{ height: 100 }} />
             </ScrollView>
 
-            {/* Plan Details Modal Overlay */}
-            {showPlanDetails && selectedPlan && (
-                <View style={styles.absoluteOverlay}>
-                    <TouchableOpacity style={styles.flexOne} activeOpacity={1} onPress={() => setShowPlanDetails(false)} />
-                    <View style={styles.customBottomSheet}>
-                        <View style={styles.customHandle} />
-                        <View style={styles.sheetContent}>
-                            <View style={[styles.planHeaderBadge, { backgroundColor: selectedPlan.color }]}>
-                                <Ionicons name={selectedPlan.id === 'pro' ? "diamond" : "flash"} size={24} color="white" />
-                            </View>
-                            <Text style={styles.sheetPlanName}>{selectedPlan.name}</Text>
-                            <Text style={styles.sheetPlanPrice}>{selectedPlan.price}<Text style={styles.sheetPlanPeriod}>{selectedPlan.period}</Text></Text>
-                            
-                            <View style={styles.featuresList}>
-                                {selectedPlan.features.map((feature: string, index: number) => (
-                                    <View key={index} style={styles.featureRow}>
-                                        <Ionicons name="checkmark-circle" size={20} color={selectedPlan.color} />
-                                        <Text style={styles.featureText}>{feature}</Text>
-                                    </View>
-                                ))}
-                            </View>
-
-                            <TouchableOpacity 
-                                style={[styles.subscribeButton, { backgroundColor: selectedPlan.color }]}
-                                onPress={() => setShowPlanDetails(false)}
-                            >
-                                <Text style={styles.subscribeButtonText}>Subscribe Now</Text>
+            {/* UPGRADE MODAL - DARK THEMED AS PER SCREENSHOT */}
+            {showUpgradeModal && (
+                <View style={styles.modalOverlay}>
+                    <TouchableOpacity style={styles.flexOne} activeOpacity={1} onPress={() => setShowUpgradeModal(false)} />
+                    <View style={styles.darkSheet}>
+                        <View style={styles.darkSheetHeader}>
+                            <TouchableOpacity onPress={() => setShowUpgradeModal(false)} style={styles.closeModalBtn}>
+                                <Ionicons name="chevron-back" size={24} color="white" />
                             </TouchableOpacity>
+                            <TouchableOpacity style={styles.moreOptionsBtn}>
+                                <Ionicons name="ellipsis-horizontal" size={24} color="white" />
+                            </TouchableOpacity>
+                        </View>
+
+                        <Text style={styles.modalTitle}>Choose a plan</Text>
+                        <Text style={styles.modalSubtitle}>All features, No limit</Text>
+
+                        <ScrollView style={styles.planScroll} showsVerticalScrollIndicator={false}>
+                            {UPGRADE_PLANS.map((plan) => (
+                                <TouchableOpacity 
+                                    key={plan.id}
+                                    style={[styles.planOptionCard, selectedUpgrade === plan.id && styles.planOptionCardActive]}
+                                    activeOpacity={0.8}
+                                    onPress={() => setSelectedUpgrade(plan.id)}
+                                >
+                                    <View style={styles.optionHeader}>
+                                        <View style={styles.radioRow}>
+                                            <View style={[styles.radioOuter, selectedUpgrade === plan.id && styles.radioOuterActive]}>
+                                                {selectedUpgrade === plan.id && <View style={styles.radioInner} />}
+                                            </View>
+                                            <View>
+                                                <Text style={styles.optionName}>{plan.name}</Text>
+                                                <Text style={styles.optionSubtitle}>{plan.subtitle}</Text>
+                                            </View>
+                                        </View>
+                                        <Text style={styles.optionPrice}>{plan.price}</Text>
+                                    </View>
+                                    
+                                    {selectedUpgrade === plan.id && (
+                                        <View style={styles.featuresBox}>
+                                            {plan.features.map((f, i) => (
+                                                <View key={i} style={styles.featureLine}>
+                                                    <View style={styles.bullet} />
+                                                    <Text style={styles.featureLineText}>{f}</Text>
+                                                </View>
+                                            ))}
+                                        </View>
+                                    )}
+
+                                    {plan.isBest && (
+                                        <View style={styles.bestBadge}>
+                                            <Ionicons name="star" size={14} color="white" />
+                                        </View>
+                                    )}
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
+
+                        <View style={styles.modalFooter}>
+                            <TouchableOpacity style={styles.paymentBtn} onPress={() => setShowUpgradeModal(false)}>
+                                <LinearGradient colors={['#3b82f6', '#2dd4bf']} start={{x:0, y:0}} end={{x:1, y:0}} style={styles.paymentGradient}>
+                                    <Text style={styles.paymentBtnText}>Make Payment</Text>
+                                </LinearGradient>
+                            </TouchableOpacity>
+                            <Text style={styles.modalFooterNote}>You can cancel the subscription anytime</Text>
                         </View>
                     </View>
                 </View>
@@ -194,24 +218,22 @@ function TabItem({ icon, label, active, route }: any) {
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#faf9fe' },
     scrollContent: { padding: 24 },
-    profileHeader: { alignItems: 'center', marginVertical: 20, marginBottom: 30 },
-    avatarGradient: { width: 90, height: 90, borderRadius: 45, justifyContent: 'center', alignItems: 'center', marginBottom: 16, shadowColor: Colors.light.primary, shadowOpacity: 0.2, shadowRadius: 10, elevation: 5 },
-    avatarText: { color: 'white', fontFamily: 'Inter_700Bold', fontSize: 28 },
-    userName: { fontFamily: 'Inter_700Bold', fontSize: 22, color: '#111' },
-    userEmail: { fontFamily: 'Inter_400Regular', fontSize: 13, color: '#888', marginTop: 4 },
-    editProfileButton: { marginTop: 12, paddingVertical: 6, paddingHorizontal: 16, borderRadius: 20, backgroundColor: 'rgba(0, 88, 188, 0.05)' },
-    editProfileText: { fontFamily: 'Inter_700Bold', fontSize: 11, color: Colors.light.primary },
+    profileHeader: { alignItems: 'center', marginVertical: 20 },
+    avatarGradient: { width: 80, height: 80, borderRadius: 40, justifyContent: 'center', alignItems: 'center', marginBottom: 12, shadowColor: Colors.light.primary, shadowOpacity: 0.1, shadowRadius: 10, elevation: 4 },
+    avatarText: { color: 'white', fontFamily: 'Inter_700Bold', fontSize: 24 },
+    userName: { fontFamily: 'Inter_700Bold', fontSize: 20, color: '#111' },
+    userEmail: { fontFamily: 'Inter_400Regular', fontSize: 13, color: '#888', marginTop: 2 },
+    editProfileButton: { marginTop: 10, paddingVertical: 5, paddingHorizontal: 12, borderRadius: 20, backgroundColor: 'rgba(0, 88, 188, 0.05)' },
+    editProfileText: { fontFamily: 'Inter_700Bold', fontSize: 10, color: Colors.light.primary },
     
-    subscriptionContainer: { gap: 16, marginBottom: 32 },
-    planCardContainer: { borderRadius: 24, overflow: 'hidden', elevation: 4 },
-    planCard: { padding: 24, minHeight: 140, justifyContent: 'space-between' },
-    planCardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-    planName: { fontFamily: 'Inter_400Regular', fontSize: 14, color: 'rgba(255,255,255,0.8)', marginBottom: 4 },
-    planPriceText: { fontFamily: 'Inter_700Bold', fontSize: 28, color: 'white' },
-    planPeriodText: { fontSize: 14, fontFamily: 'Inter_400Regular', color: 'rgba(255,255,255,0.7)' },
-    planIconCircle: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.2)', justifyContent: 'center', alignItems: 'center' },
-    planCardFooter: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-    viewDetailsText: { fontFamily: 'Inter_700Bold', fontSize: 12, color: 'white' },
+    currentPlanSection: { marginBottom: 32, marginTop: 10 },
+    currentPlanCard: { borderRadius: 24, padding: 20, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    planInfo: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+    planIconCircle: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.2)', justifyContent: 'center', alignItems: 'center' },
+    planBadge: { color: 'rgba(255,255,255,0.7)', fontSize: 10, fontFamily: 'Inter_700Bold', letterSpacing: 1 },
+    currentPlanName: { color: 'white', fontFamily: 'Inter_700Bold', fontSize: 20 },
+    upgradeBtn: { backgroundColor: 'white', paddingVertical: 10, paddingHorizontal: 16, borderRadius: 16, flexDirection: 'row', alignItems: 'center', gap: 6, elevation: 5 },
+    upgradeBtnText: { color: Colors.light.primary, fontFamily: 'Inter_700Bold', fontSize: 12 },
     
     section: { marginBottom: 24 },
     sectionTitle: { fontFamily: 'Inter_700Bold', fontSize: 16, color: '#111', marginBottom: 12, marginLeft: 4 },
@@ -221,20 +243,36 @@ const styles = StyleSheet.create({
     settingLabel: { fontFamily: 'Inter_400Regular', fontSize: 15, color: '#333' },
     settingValue: { fontFamily: 'Inter_400Regular', fontSize: 14, color: '#aaa', marginRight: 8 },
     
-    absoluteOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, justifyContent: 'flex-end' },
+    // UPGRADE MODAL - DARK THEME
+    modalOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.8)', zIndex: 2000 },
     flexOne: { flex: 1 },
-    customBottomSheet: { backgroundColor: 'white', borderTopLeftRadius: 32, borderTopRightRadius: 32, paddingBottom: 40 },
-    customHandle: { width: 40, height: 4, backgroundColor: '#ddd', borderRadius: 2, alignSelf: 'center', marginVertical: 12 },
-    sheetContent: { paddingHorizontal: 24, alignItems: 'center', paddingTop: 10 },
-    planHeaderBadge: { width: 64, height: 64, borderRadius: 32, justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
-    sheetPlanName: { fontFamily: 'Inter_700Bold', fontSize: 24, color: '#111', marginBottom: 8 },
-    sheetPlanPrice: { fontFamily: 'Inter_700Bold', fontSize: 32, color: '#111', marginBottom: 24 },
-    sheetPlanPeriod: { fontSize: 14, color: '#888' },
-    featuresList: { width: '100%', gap: 16, marginBottom: 32 },
-    featureRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-    featureText: { fontFamily: 'Inter_400Regular', fontSize: 14, color: '#555' },
-    subscribeButton: { width: '100%', paddingVertical: 18, borderRadius: 16, alignItems: 'center' },
-    subscribeButtonText: { color: 'white', fontFamily: 'Inter_700Bold', fontSize: 16 },
+    darkSheet: { backgroundColor: '#131317', borderTopLeftRadius: 36, borderTopRightRadius: 36, height: SCREEN_HEIGHT * 0.85, paddingBottom: 40 },
+    darkSheetHeader: { flexDirection: 'row', justifyContent: 'space-between', padding: 24, paddingBottom: 10 },
+    closeModalBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
+    moreOptionsBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
+    modalTitle: { color: 'white', fontFamily: 'Inter_700Bold', fontSize: 32, paddingHorizontal: 30 },
+    modalSubtitle: { color: '#888', fontFamily: 'Inter_400Regular', fontSize: 16, paddingHorizontal: 30, marginTop: 4, marginBottom: 30 },
+    planScroll: { flex: 1, paddingHorizontal: 24 },
+    planOptionCard: { backgroundColor: '#1e1e24', borderRadius: 24, padding: 24, marginBottom: 20, borderWidth: 1, borderColor: '#333', overflow: 'hidden' },
+    planOptionCardActive: { borderColor: Colors.light.primary, backgroundColor: '#1c1c2b' },
+    optionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+    radioRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+    radioOuter: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: '#555', justifyContent: 'center', alignItems: 'center' },
+    radioOuterActive: { borderColor: Colors.light.primary },
+    radioInner: { width: 12, height: 12, borderRadius: 6, backgroundColor: Colors.light.primary },
+    optionName: { color: 'white', fontFamily: 'Inter_700Bold', fontSize: 18 },
+    optionSubtitle: { color: '#888', fontSize: 12, marginTop: 2 },
+    optionPrice: { color: 'white', fontFamily: 'Inter_700Bold', fontSize: 16 },
+    featuresBox: { marginTop: 20, paddingTop: 20, borderTopWidth: 1, borderTopColor: '#333', gap: 12 },
+    featureLine: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+    bullet: { width: 4, height: 4, borderRadius: 2, backgroundColor: '#888' },
+    featureLineText: { color: '#ddd', fontSize: 13, fontFamily: 'Inter_400Regular' },
+    bestBadge: { position: 'absolute', top: 0, right: 0, width: 40, height: 40, backgroundColor: Colors.light.primary, borderBottomLeftRadius: 40, alignItems: 'flex-end', padding: 8 },
+    modalFooter: { padding: 30, gap: 16 },
+    paymentBtn: { width: '100%', height: 64, borderRadius: 32, overflow: 'hidden' },
+    paymentGradient: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    paymentBtnText: { color: 'white', fontFamily: 'Inter_700Bold', fontSize: 18 },
+    modalFooterNote: { color: '#888', textAlign: 'center', fontSize: 12 },
     
     tabBar: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 75, backgroundColor: 'white', flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', paddingBottom: 15, borderTopWidth: 1, borderTopColor: '#f0f0f0' },
     tabItem: { alignItems: 'center' },
