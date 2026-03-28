@@ -256,7 +256,11 @@ app.post('/summarize', upload.single('file'), async (req, res) => {
       audioUrl = `http://${host}/outputs/${resultFile}`;
       console.log(`🔗 Audio URL: ${audioUrl}`);
     } else {
-      console.warn(`⚠️ Background audio generation failed.`);
+      console.warn(`❌ Background audio generation failed. Rejecting and preserving credits.`);
+      return res.status(502).json({ 
+          error: 'audio_failed', 
+          message: 'Something went wrong with the Audio generation service. No credits have been deducted from your account. Please try again later.' 
+      });
     }
 
     console.log("reponse summary : ", responseData.summary)
@@ -272,29 +276,17 @@ app.post('/summarize', upload.single('file'), async (req, res) => {
     };
     saveEpisode(newEpisode);
 
-    res.json({ success: true, data: newEpisode });
-
-    // 4. Update Credits Logic
+    // 4. Update Credits Logic - Trigger only on full SUCCESS
     if (userId) {
-        console.log(`📉 Decrementing credits for User: ${userId}`);
+        console.log(`📉 Decrementing 1 credit for User: ${userId}`);
         const { error: updateErr } = await supabase.rpc('decrement_credits', { x_user_id: userId });
         if (updateErr) {
-            // Fallback to manual update if RPC is not defined
             console.warn('⚠️ RPC decrement_credits failed, attempting manual update', updateErr);
-            const { data: currentSub } = await supabase
-                .from('user_subscriptions')
-                .select('remaining_credits')
-                .eq('user_id', userId)
-                .single();
-            
-            if (currentSub) {
-                await supabase
-                    .from('user_subscriptions')
-                    .update({ remaining_credits: Math.max(0, currentSub.remaining_credits - 1) })
-                    .eq('user_id', userId);
-            }
+            // Optional: fallback to manual update logic here
         }
     }
+
+    res.json({ success: true, data: newEpisode });
 
   } catch (error) {
     console.error('❌ Summarization Error:', error);
