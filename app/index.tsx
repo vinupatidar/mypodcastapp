@@ -267,6 +267,15 @@ export default function HomeScreen() {
             <TouchableOpacity 
                 style={styles.generateButtonContainer} 
                 onPress={() => {
+                    const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
+                    if (wordCount > 1000) {
+                        Alert.alert('Too many words', 'Please reduce your text to under 1000 words.');
+                        return;
+                    }
+                    if (!text.trim() && !selectedFile) {
+                        Alert.alert('Missing content', 'Please upload a file or paste some text first.');
+                        return;
+                    }
                     if (!isConfirmed) {
                         Alert.alert('Confirmation Required', 'Please confirm that you have provided enough details before generating.');
                         return;
