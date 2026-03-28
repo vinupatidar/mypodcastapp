@@ -21,7 +21,7 @@ const openai = new OpenAI({
 
 // ElevenLabs Configuration
 const ELEVENLABS_API_KEY = (process.env.ELEVENLABS_API_KEY || '').trim();
-const ELEVEN_VOICE_ID = "pNInz6obpgDQGcFmaJgB"; // Adam - Standard Free Tier Voice
+const DEFAULT_VOICE_ID = "pNInz6obpgDQGcFmaJgB"; // Adam
 
 app.use(cors());
 app.use(express.json());
@@ -48,7 +48,7 @@ const upload = multer({ dest: 'uploads/' });
 /**
  * ElevenLabs TTS Integration - Updated with Speed and Multi-language support
  */
-async function generateElevenLabsTTS(text, filename, speed = 1.0) {
+async function generateElevenLabsTTS(text, filename, speed = 1.0, voiceId = DEFAULT_VOICE_ID) {
   if (!ELEVENLABS_API_KEY || ELEVENLABS_API_KEY === 'your_elevenlabs_api_key_here') {
     console.warn("⚠️ ELEVENLABS_API_KEY is invalid or missing in .env.");
     return null;
@@ -62,7 +62,7 @@ async function generateElevenLabsTTS(text, filename, speed = 1.0) {
   try {
     const response = await axios({
       method: 'post',
-      url: `https://api.elevenlabs.io/v1/text-to-speech/${ELEVEN_VOICE_ID}/stream`,
+      url: `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream`,
       headers: {
         'xi-api-key': ELEVENLABS_API_KEY,
         'Content-Type': 'application/json'
@@ -147,6 +147,7 @@ app.post('/summarize', upload.single('file'), async (req, res) => {
     const language = req.body.language || 'English (US)';
     const maxWords = parseInt(req.body.maxWords, 10) || 500;
     const speed = parseFloat(req.body.speed) || 1.0;
+    const voiceId = req.body.voiceId || DEFAULT_VOICE_ID;
 
     let contentToSummarize = text || '';
 
@@ -201,7 +202,7 @@ app.post('/summarize', upload.single('file'), async (req, res) => {
     // Generate Audio with ElevenLabs - Passing Speed
     let audioUrl = null;
     let filename = `podcast_${Date.now()}.mp3`;
-    const resultFile = await generateElevenLabsTTS(responseData.voice_script, filename, speed);
+    const resultFile = await generateElevenLabsTTS(responseData.voice_script, filename, speed, voiceId);
 
     if (resultFile) {
       const host = req.get('host');
