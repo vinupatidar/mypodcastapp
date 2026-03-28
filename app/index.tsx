@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, TextInput, KeyboardAvoidingView, Platform, Dimensions, FlatList, Animated, Alert } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, TextInput, KeyboardAvoidingView, Platform, Dimensions, FlatList, Animated, Alert, ActivityIndicator } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '../constants/Colors';
@@ -8,6 +8,8 @@ import { router, useLocalSearchParams } from 'expo-router';
 import Slider from '@react-native-community/slider';
 import * as DocumentPicker from 'expo-document-picker';
 import PaywallScreen from './paywall';
+import AuthScreen from './auth';
+import { supabase } from '../services/supabase';
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -43,13 +45,15 @@ export default function HomeScreen() {
   const [text, setText] = useState('');
   const [selectedFile, setSelectedFile] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
   
+  // Auth & Subscription States
+  const [session, setSession] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [hasSubscription, setHasSubscription] = useState(false);
+  
   // UI States
   const [showOptions, setShowOptions] = useState(false);
   const [pickerVisible, setPickerVisible] = useState(false);
   const [pickerType, setPickerType] = useState<'language' | 'category' | 'voice'>('language');
-  
-  // Subscription Interception (Simulation)
-  const [hasSubscription, setHasSubscription] = useState(false);
   
   // Data States
   const [selectedVoice, setSelectedVoice] = useState(VOICES[0]);
@@ -57,6 +61,48 @@ export default function HomeScreen() {
   const [voiceSpeed, setVoiceSpeed] = useState(1.0);
   const [selectedLanguage, setSelectedLanguage] = useState('Hindi');
   const [selectedCategory, setSelectedCategory] = useState('Story Telling');
+
+  useEffect(() => {
+    // Initial Session Check
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (session) checkSubscription(session.user.id);
+      else setLoading(false);
+    });
+
+    // Listen for Auth Changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      if (session) checkSubscription(session.user.id);
+      else {
+        setHasSubscription(false);
+        setLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const checkSubscription = async (userId: string) => {
+    try {
+      const { data } = await supabase
+        .from('user_subscriptions')
+        .select('*, subscription_plans(*)')
+        .eq('user_id', userId)
+        .eq('status', 'active');
+      
+      if (data && data.length > 0) {
+        setHasSubscription(true);
+      } else {
+        setHasSubscription(false);
+      }
+    } catch (e) {
+      console.error('Subscription Check Error:', e);
+      setHasSubscription(false);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const openPicker = (type: 'language' | 'category' | 'voice') => {
     setPickerType(type);
@@ -98,19 +144,20 @@ export default function HomeScreen() {
     pickerType === 'category' ? CATEGORIES : 
     VOICES.map(v => v.name);
 
+  if (loading) {
+    return (
+        <View style={{ flex: 1, backgroundColor: '#103E5B', justifyContent: 'center', alignItems: 'center' }}>
+            <ActivityIndicator size="large" color="#3b82f6" />
+        </View>
+    );
+  }
+
+  if (!session) {
+      return <AuthScreen />;
+  }
+
   if (!hasSubscription) {
-      // Direct redirect to Paywall if no subscription
-      return (
-          <View style={{ flex: 1, backgroundColor: '#103E5B' }}>
-              <TouchableOpacity 
-                  style={{ flex: 1 }} 
-                  onPress={() => setHasSubscription(true)} 
-                  activeOpacity={1}
-              >
-                  <PaywallScreen />
-              </TouchableOpacity>
-          </View>
-      );
+      return <PaywallScreen />;
   }
 
   return (

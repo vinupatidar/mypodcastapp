@@ -6,39 +6,86 @@ import { Colors } from '../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
+import { supabase } from '../services/supabase';
+import { ActivityIndicator, Alert } from 'react-native';
+
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-const PAYWALL_PLANS = [
-    {
-        id: 'basic',
-        name: 'Basic',
-        price: '$20',
-        period: '/Mon',
-        icon: 'bicycle-outline',
-        gradient: ['#4ade80', '#2dd4bf'],
-        features: ['5 AI Podcast Generations', '30 Days Library History']
-    },
-    {
-        id: 'premium',
-        name: 'Premium',
-        price: '$40',
-        period: '/Mon',
-        icon: 'car-outline',
-        gradient: ['#fbbf24', '#f59e0b'],
-        features: ['20 AI Podcast Generations', 'Full Library History Access']
-    }
-];
-
 export default function PaywallScreen() {
+    const [plans, setPlans] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [fullName, setFullName] = useState('User');
+
+    React.useEffect(() => {
+        const initialize = async () => {
+            await Promise.all([fetchPlans(), fetchUser()]);
+            setLoading(false);
+        };
+        initialize();
+    }, []);
+
+    const fetchUser = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+            const { data } = await supabase.from('profiles').select('full_name').eq('id', user.id).single();
+            if (data?.full_name) setFullName(data.full_name);
+        }
+    };
+
+    const fetchPlans = async () => {
+        try {
+            const { data } = await supabase.from('subscription_plans').select('*').order('price', { ascending: true });
+            if (data) setPlans(data);
+        } catch (e) {
+            console.error('Fetch Plans Error:', e);
+        }
+    };
+
+    const handleSubscribe = async (planId: string) => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            Alert.alert('Error', 'Please log in again');
+            return;
+        }
+
+        try {
+            const { error } = await supabase
+                .from('user_subscriptions')
+                .upsert({ 
+                    user_id: user.id, 
+                    plan_id: planId, 
+                    status: 'active',
+                    start_date: new Date().toISOString()
+                }, { onConflict: 'user_id' });
+
+            if (error) throw error;
+            router.replace('/');
+        } catch (error: any) {
+            Alert.alert('Subscription Error', error.message);
+        }
+    };
+
+    const handleSignOut = async () => {
+        await supabase.auth.signOut();
+        router.replace('/auth');
+    };
+
+    if (loading) {
+        return (
+            <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+                <ActivityIndicator size="large" color="#3b82f6" />
+            </View>
+        );
+    }
+
     return (
         <View style={styles.container}>
             <StatusBar barStyle="light-content" />
             
-            {/* Header with Background Color matched to Image */}
             <View style={styles.headerBackground}>
                 <SafeAreaView>
                         <View style={styles.topGreetingContainer}>
-                            <Text style={styles.greetingText}>Hello, Vinu Patidar</Text>
+                            <Text style={styles.greetingText}>Hello, {fullName}</Text>
                         </View>
                         <View style={styles.headerCenteredContent}>
                             <Text style={styles.choosePlanTitle}>CHOOSE YOUR PLAN</Text>
@@ -46,15 +93,14 @@ export default function PaywallScreen() {
                 </SafeAreaView>
             </View>
 
-            {/* Content Card */}
             <View style={styles.contentCard}>
                 <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.plansList}>
-                    {PAYWALL_PLANS.map((plan) => (
+                    {plans.map((plan) => (
                         <TouchableOpacity 
                             key={plan.id} 
                             style={styles.planItem} 
                             activeOpacity={0.9}
-                            onPress={() => router.replace('/')} // Simulate subscription success
+                            onPress={() => handleSubscribe(plan.id)}
                         >
                             <LinearGradient
                                 colors={plan.gradient as any}
@@ -67,19 +113,20 @@ export default function PaywallScreen() {
                             
                             <View style={styles.planInfo}>
                                 <Text style={styles.planItemName}>{plan.name}</Text>
-                                <Text style={styles.planFeatureText}>{plan.features[0]}</Text>
-                                <Text style={styles.planFeatureText}>{plan.features[1]}</Text>
+                                {plan.features && plan.features.map((f: string, i: number) => (
+                                    <Text key={i} style={styles.planFeatureText}>{f}</Text>
+                                ))}
                                 <Text style={styles.choosePlanLink}>Choose Plan {'>'}</Text>
                             </View>
 
                             <View style={styles.priceContainer}>
-                                <Text style={styles.priceValue}>{plan.price}</Text>
+                                <Text style={styles.priceValue}>${plan.price}</Text>
                                 <Text style={styles.periodLabel}>{plan.period}</Text>
                             </View>
                         </TouchableOpacity>
                     ))}
 
-                    <TouchableOpacity style={styles.signoutBtn} onPress={() => console.log('Sign Out')}>
+                    <TouchableOpacity style={styles.signoutBtn} onPress={handleSignOut}>
                         <Ionicons name="log-out-outline" size={20} color="#FF6347" />
                         <Text style={styles.signoutText}>Sign Out</Text>
                     </TouchableOpacity>

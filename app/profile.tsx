@@ -6,51 +6,131 @@ import { Colors } from '../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
+import { supabase } from '../services/supabase';
+import { ActivityIndicator, Alert } from 'react-native';
+
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
 
-// SUBSCRIPTION DATA (Matched to Paywall Plans)
-const UPGRADE_PLANS = [
-    {
-        id: 'basic',
-        name: 'Basic',
-        price: '$20 /m',
-        subtitle: 'Start your journey',
-        features: ['5 AI Podcast Generations', '30 Days Library History', 'High Quality Audio'],
-        icon: 'bicycle-outline',
-        gradient: ['#4ade80', '#2dd4bf'],
-        isBest: false
-    },
-    {
-        id: 'premium',
-        name: 'Premium',
-        price: '$40 /m',
-        subtitle: 'Pro experience',
-        features: ['20 AI Podcast Generations', 'Full Library History Access', 'Ultra High Quality Audio', 'Priority Support'],
-        icon: 'car-outline',
-        gradient: ['#fbbf24', '#f59e0b'],
-        isBest: true
-    }
-];
-
 export default function ProfileScreen() {
+    const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState<any>(null);
+    const [profile, setProfile] = useState<any>(null);
     const [currentPlan, setCurrentPlan] = useState('Free Explorer');
+    const [plans, setPlans] = useState<any[]>([]);
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-    const [selectedUpgrade, setSelectedUpgrade] = useState('premium');
+    const [selectedUpgrade, setSelectedUpgrade] = useState('');
+
+    React.useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                setUser(user);
+                const { data: prof } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+                if (prof) setProfile(prof);
+
+                const { data: sub } = await supabase
+                    .from('user_subscriptions')
+                    .select('*, subscription_plans(*)')
+                    .eq('user_id', user.id)
+                    .eq('status', 'active')
+                    .single();
+                
+                if (sub?.subscription_plans) {
+                    setCurrentPlan(sub.subscription_plans.name);
+                }
+            }
+
+            const { data: pList } = await supabase.from('subscription_plans').select('*').order('price', { ascending: true });
+            if (pList) {
+                setPlans(pList);
+                if (pList.length > 0) setSelectedUpgrade(pList[0].id);
+            }
+        } catch (e) {
+            console.error('Fetch Profile Data Error:', e);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSignOut = async () => {
+        await supabase.auth.signOut();
+        router.replace('/auth');
+    };
+
+    const handleDeleteAccount = async () => {
+        Alert.alert(
+            "Delete Account",
+            "Are you sure you want to delete your account? This action cannot be undone.",
+            [
+                { text: "Cancel", style: "cancel" },
+                { 
+                    text: "Delete", 
+                    style: "destructive",
+                    onPress: async () => {
+                        const { data: { user } } = await supabase.auth.getUser();
+                        if (user) {
+                            await supabase.from('profiles').delete().eq('id', user.id);
+                            await supabase.auth.signOut();
+                            router.replace('/auth');
+                        }
+                    }
+                }
+            ]
+        );
+    };
+
+    const handleUpgrade = async () => {
+        if (!user || !selectedUpgrade) return;
+        
+        setLoading(true);
+        try {
+            const { error } = await supabase
+                .from('user_subscriptions')
+                .upsert({ 
+                    user_id: user.id, 
+                    plan_id: selectedUpgrade, 
+                    status: 'active',
+                    start_date: new Date().toISOString()
+                }, { onConflict: 'user_id' });
+
+            if (error) throw error;
+            
+            const planName = plans.find(p => p.id === selectedUpgrade)?.name || 'Basic';
+            setCurrentPlan(planName);
+            setShowUpgradeModal(false);
+            Alert.alert("Success", `Upgraded to ${planName} plan!`);
+        } catch (error: any) {
+            Alert.alert("Error", error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading && !showUpgradeModal) {
+        return (
+            <View style={{ flex: 1, backgroundColor: '#faf9fe', justifyContent: 'center', alignItems: 'center' }}>
+                <ActivityIndicator size="large" color="#3b82f6" />
+            </View>
+        );
+    }
 
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
                 
-                {/* Profile Header */}
                 <View style={styles.profileHeader}>
                     <LinearGradient
                         colors={Colors.light.signatureGradient}
                         style={styles.avatarGradient}
                     >
-                        <Text style={styles.avatarText}>VP</Text>
+                        <Text style={styles.avatarText}>{profile?.full_name?.split(' ').map((n: string) => n[0]).join('') || 'U'}</Text>
                     </LinearGradient>
-                    <Text style={styles.userName}>Vinu Patidar</Text>
-                    <Text style={styles.userEmail}>vinu@example.com</Text>
+                    <Text style={styles.userName}>{profile?.full_name || 'MyPodcast User'}</Text>
+                    <Text style={styles.userEmail}>{user?.email || 'N/A'}</Text>
                     
                     <TouchableOpacity style={styles.editProfileButton}>
                         <Text style={styles.editProfileText}>Edit Profile</Text>
@@ -106,8 +186,8 @@ export default function ProfileScreen() {
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Account Management</Text>
                     <View style={styles.card}>
-                        <SettingItem icon="log-out" label="Sign Out" danger />
-                        <SettingItem icon="trash" label="Delete My Account" danger />
+                        <SettingItem icon="log-out" label="Sign Out" danger onPress={handleSignOut} />
+                        <SettingItem icon="trash" label="Delete My Account" danger onPress={handleDeleteAccount} />
                     </View>
                 </View>
 
@@ -132,7 +212,7 @@ export default function ProfileScreen() {
 
                         <View style={styles.paywallContentCard}>
                             <ScrollView style={styles.paywallScroll} showsVerticalScrollIndicator={false}>
-                                {UPGRADE_PLANS.map((plan) => (
+                                {plans.map((plan) => (
                                     <TouchableOpacity 
                                         key={plan.id}
                                         style={[styles.paywallPlanItem, selectedUpgrade === plan.id && styles.paywallPlanItemActive]}
@@ -140,17 +220,17 @@ export default function ProfileScreen() {
                                         onPress={() => setSelectedUpgrade(plan.id)}
                                     >
                                         <LinearGradient
-                                            colors={(plan as any).gradient}
+                                            colors={plan.gradient as any}
                                             start={{ x: 0, y: 0 }}
                                             end={{ x: 1, y: 1 }}
                                             style={styles.paywallIconBox}
                                         >
-                                            <Ionicons name={(plan as any).icon} size={28} color="white" />
+                                            <Ionicons name={plan.icon as any} size={28} color="white" />
                                         </LinearGradient>
                                         
                                         <View style={styles.paywallPlanInfo}>
                                             <Text style={styles.paywallPlanName}>{plan.name}</Text>
-                                            {plan.features.slice(0, 2).map((f, i) => (
+                                            {plan.features?.slice(0, 2).map((f: string, i: number) => (
                                                 <Text key={i} style={styles.paywallPlanFeature}>{f}</Text>
                                             ))}
                                             <Text style={[styles.paywallChooseLink, { color: selectedUpgrade === plan.id ? '#3b82f6' : '#888' }]}>
@@ -159,18 +239,15 @@ export default function ProfileScreen() {
                                         </View>
 
                                         <View style={styles.paywallPriceBox}>
-                                            <Text style={styles.paywallPriceValue}>{plan.price.split(' ')[0]}</Text>
-                                            <Text style={styles.paywallPricePeriod}>{plan.price.split(' ')[1]}</Text>
+                                            <Text style={styles.paywallPriceValue}>${plan.price}</Text>
+                                            <Text style={styles.paywallPricePeriod}>{plan.period}</Text>
                                         </View>
                                     </TouchableOpacity>
                                 ))}
 
                                 <TouchableOpacity 
                                     style={styles.paywallUpgradeBtn} 
-                                    onPress={() => {
-                                        setCurrentPlan(UPGRADE_PLANS.find(p => p.id === selectedUpgrade)?.name || 'Basic');
-                                        setShowUpgradeModal(false);
-                                    }}
+                                    onPress={handleUpgrade}
                                 >
                                     <LinearGradient colors={['#3b82f6', '#2dd4bf']} start={{x:0, y:0}} end={{x:1, y:0}} style={styles.paywallUpgradeGradient}>
                                         <Text style={styles.paywallUpgradeText}>Make Payment</Text>
@@ -194,9 +271,9 @@ export default function ProfileScreen() {
     );
 }
 
-function SettingItem({ icon, label, value, danger }: any) {
+function SettingItem({ icon, label, value, danger, onPress }: any) {
     return (
-        <TouchableOpacity style={styles.settingItem}>
+        <TouchableOpacity style={styles.settingItem} onPress={onPress}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <View style={[styles.settingIconContainer, danger && { backgroundColor: 'rgba(255, 99, 71, 0.05)' }]}>
                     <Ionicons name={icon} size={18} color={danger ? "#FF6347" : "#555"} />

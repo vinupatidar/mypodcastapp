@@ -16,6 +16,7 @@
   "author": "Vinu Patidar",
   "license": "ISC",
   "dependencies": {
+    "@supabase/supabase-js": "^2.100.1",
     "axios": "^1.14.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
