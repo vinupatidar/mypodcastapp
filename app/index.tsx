@@ -112,32 +112,41 @@ export default function HomeScreen() {
 
   const checkSubscription = async (userId: string) => {
     try {
-      // Parallelize profile and subscription checks
+      console.log('🔄 Checking subscription for:', userId);
       const [subRes, profRes] = await Promise.all([
         supabase.from('user_subscriptions').select('*, subscription_plans(*)').eq('user_id', userId).eq('status', 'active').maybeSingle(),
         supabase.from('profiles').select('*').eq('id', userId).single()
       ]);
       
       const sub = subRes.data;
+      console.log('📥 Sub data received:', sub ? 'Row found' : 'No row found', sub?.status);
+
       if (sub && sub.subscription_plans) {
         const now = new Date();
         const endDate = sub.end_date ? new Date(sub.end_date) : null;
+        console.log('🗓️ Expiry check:', endDate ? endDate.toISOString() : 'Lifetime');
 
         if (endDate && now > endDate) {
+            console.log('❌ Subscription EXPIRED');
             setHasSubscription(false);
             setRemainingCredits(0);
         } else {
+            console.log('✅ Subscription ACTIVE');
             setHasSubscription(true);
             setRemainingCredits(sub.remaining_credits || 0);
         }
       } else {
+        console.log('🚫 No ACTIVE subscription plan found in DB');
         setHasSubscription(false);
         setRemainingCredits(0);
       }
 
-      if (profRes.data) setProfile(profRes.data);
+      if (profRes.data) {
+          console.log('👤 Profile found:', profRes.data.full_name);
+          setProfile(profRes.data);
+      }
     } catch (e) {
-      console.error('Subscription Check Error:', e);
+      console.error('⚠️ Subscription Check ERROR:', e);
       setHasSubscription(false);
     } finally {
       setLoading(false);
