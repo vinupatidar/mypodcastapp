@@ -278,6 +278,14 @@ export default function HomeScreen() {
                 value={text}
                 onChangeText={setText}
               />
+              {text.length > 0 && (
+                <TouchableOpacity 
+                  onPress={() => setText('')}
+                  style={styles.clearButton}
+                >
+                  <Ionicons name="close-circle" size={20} color={Colors.light.onSurfaceVariant} />
+                </TouchableOpacity>
+              )}
             </View>
             
             <TouchableOpacity 
@@ -477,8 +485,9 @@ const styles = StyleSheet.create({
   dividerContainer: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
   divider: { flex: 1, height: 1 },
   dividerText: { fontFamily: 'Inter_700Bold', fontSize: 10, color: '#bbb', marginHorizontal: 16, letterSpacing: 1 },
-  textInputContainer: { backgroundColor: 'white', borderRadius: 20, padding: 16, height: 140, marginBottom: 24, elevation: 1 },
+  textInputContainer: { flexDirection: 'row', backgroundColor: 'white', borderRadius: 20, padding: 16, height: 140, marginBottom: 24, elevation: 1 },
   textInput: { fontFamily: 'Inter_400Regular', fontSize: 15, color: Colors.light.onSurface, flex: 1, textAlignVertical: 'top' },
+  clearButton: { padding: 4, marginTop: -4 },
   
   creditBadge: { 
     position: 'absolute',
