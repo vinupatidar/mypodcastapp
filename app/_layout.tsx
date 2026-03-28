@@ -17,6 +17,18 @@ export default function RootLayout() {
   useEffect(() => {
     if (loaded || error) {
       SplashScreen.hideAsync();
+      
+      // Initialize IAP
+      try {
+          const { IAPService } = require('../services/iap_service');
+          IAPService.initConnection();
+          
+          return () => {
+              IAPService.endConnection();
+          };
+      } catch (err) {
+          console.warn('IAP Setup Error:', err);
+      }
     }
   }, [loaded, error]);
 

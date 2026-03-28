@@ -44,8 +44,16 @@ export default function BuyCreditsScreen() {
         }
 
         try {
-            // Mocking payment success 
-            console.log(`📡 Processing purchase for ${pack.name}...`);
+            // Priority: Native In-App Purchase
+            if (pack.iap_sku) {
+                const { IAPService } = require('../services/iap_service');
+                await IAPService.requestPurchase(pack.iap_sku, false);
+                setLoadingPack(null);
+                return;
+            }
+
+            // Fallback: Mocking payment success (for development)
+            console.log(`📡 Processing mock purchase for ${pack.name}...`);
             
             // 1. Fetch current credits
             const { data: sub } = await supabase
@@ -78,7 +86,7 @@ export default function BuyCreditsScreen() {
             );
         } catch (error: any) {
             console.error('Purchase Error:', error);
-            Alert.alert('Purchase Failed', error.message || 'Something went wrong');
+            Alert.alert('Purchase Failed', error.message || 'Unknown error');
         } finally {
             setLoadingPack(null);
         }

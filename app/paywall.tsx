@@ -48,12 +48,21 @@ export default function PaywallScreen() {
             return;
         }
 
+        const selectedPlan = plans.find(p => p.id === planId);
+        if (!selectedPlan) return;
+
         try {
+            // Priority: Native In-App Purchase
+            if (selectedPlan.iap_sku) {
+                const { IAPService } = require('../services/iap_service');
+                await IAPService.requestPurchase(selectedPlan.iap_sku, true);
+                return;
+            }
+
+            // Fallback: Mocking (Dev mode)
             const startDate = new Date();
             const endDate = new Date();
-            endDate.setDate(startDate.getDate() + 30); // 30 Days from now
-
-            const selectedPlan = plans.find(p => p.id === planId);
+            endDate.setDate(startDate.getDate() + 30);
             const planCredits = selectedPlan?.credits || 0;
 
             const { error } = await supabase

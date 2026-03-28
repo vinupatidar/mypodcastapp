@@ -19,7 +19,8 @@ create table subscription_plans (
   icon text,
   gradient text[],
   is_best boolean default false,
-  credits integer not null default 0
+  credits integer not null default 0,
+  iap_sku text -- Added for Native In-App Purchases
 );
 
 -- 3. Create User Subscriptions Table
@@ -64,20 +65,22 @@ create policy "Users can update their own subscription." on user_subscriptions f
 create policy "Users can view their own subscription history." on subscription_history for select using (auth.uid() = user_id);
 
 -- 6. Insert Default Plans
-insert into subscription_plans (name, price, period, features, icon, gradient, is_best, credits)
+insert into subscription_plans (name, price, period, features, icon, gradient, is_best, credits, iap_sku)
 values 
   ('Basic', 20.00, '/month', 
    array['5 AI Podcast Generations', '30 Days Library History', 'High Quality Audio'], 
    'bicycle-outline', 
    array['#4ade80', '#2dd4bf'], 
    false,
-   5),
+   5,
+   'com.mypodcast.basic_sub'),
   ('Premium', 40.00, '/month', 
    array['20 AI Podcast Generations', 'Full Library History Access', 'Ultra High Quality Audio', 'Priority Support'], 
    'car-outline', 
    array['#fbbf24', '#f59e0b'], 
    true,
-   20);
+   20,
+   'com.mypodcast.premium_sub');
 
 -- 7. Trigger to create profile when auth.user created
 create function public.handle_new_user()
@@ -146,6 +149,7 @@ create table public.credit_packs (
   name text not null,
   credits integer not null,
   price text not null,
+  iap_sku text, -- Added for Native In-App Purchases
   description text,
   icon text not null,
   gradient text[] not null,
@@ -160,8 +164,8 @@ alter table public.credit_packs enable row level security;
 create policy "Credit packs are viewable by everyone." on credit_packs for select using (true);
 
 -- Initial Credit Packs
-insert into public.credit_packs (name, credits, price, description, icon, gradient, is_popular)
+insert into public.credit_packs (name, credits, price, iap_sku, description, icon, gradient, is_popular)
 values 
-  ('Starter Pack', 5, '$5.00', 'Perfect for a few quick summaries', 'star-outline', array['#60a5fa', '#3b82f6'], false),
-  ('Pro Pack', 20, '$15.00', 'Best for weekly podcast listeners', 'star', array['#818cf8', '#6366f1'], true),
-  ('Power Pack', 50, '$30.00', 'Maximum value for daily users', 'sparkles', array['#fbbf24', '#f59e0b'], false);
+  ('Starter Pack', 5, '$5.00', 'com.mypodcast.credits_5', 'Perfect for a few quick summaries', 'star-outline', array['#60a5fa', '#3b82f6'], false),
+  ('Pro Pack', 20, '$15.00', 'com.mypodcast.credits_20', 'Best for weekly podcast listeners', 'star', array['#818cf8', '#6366f1'], true),
+  ('Power Pack', 50, '$30.00', 'com.mypodcast.credits_50', 'Maximum value for daily users', 'sparkles', array['#fbbf24', '#f59e0b'], false);
