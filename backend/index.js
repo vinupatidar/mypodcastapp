@@ -147,7 +147,7 @@ app.post('/summarize', upload.single('file'), async (req, res) => {
     const language = req.body.language || 'English (US)';
     const maxWords = parseInt(req.body.maxWords, 10) || 500;
     const speed = parseFloat(req.body.speed) || 1.0;
-    
+
     let contentToSummarize = text || '';
 
     // Handle file upload
@@ -177,7 +177,7 @@ app.post('/summarize', upload.single('file'), async (req, res) => {
     }
 
     console.log(`🤖 Summarizing content (${language}) in style: ${category}...`);
-    
+
     // REFINEMENT: Explicit Language and Style instruction for OpenAI
     const systemPrompt = `You are a professional podcast scriptwriter. 
     Task: Summarize the provided content into a podcast format.
@@ -202,7 +202,7 @@ app.post('/summarize', upload.single('file'), async (req, res) => {
     let audioUrl = null;
     let filename = `podcast_${Date.now()}.mp3`;
     const resultFile = await generateElevenLabsTTS(responseData.voice_script, filename, speed);
-    
+
     if (resultFile) {
       const host = req.get('host');
       audioUrl = `http://${host}/outputs/${resultFile}`;
@@ -211,6 +211,8 @@ app.post('/summarize', upload.single('file'), async (req, res) => {
       console.warn(`⚠️ Background audio generation failed.`);
     }
 
+    console.log("reponse summary : ", responseData.summary)
+    console.log("response voice script  : ", responseData.voice_script)
     const newEpisode = {
       id: Date.now().toString(),
       title: `${category} Hub - ${new Date().toLocaleDateString()} (${language})`,

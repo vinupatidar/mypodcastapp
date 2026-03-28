@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
 // Computer's Local IP for Physical Devices
-const API_BASE_URL = 'http://192.168.1.2:5007';
+const API_BASE_URL = 'http://192.168.1.2:5009';
 
 /**
  * Library Screen for MyPodcast App
