@@ -180,11 +180,19 @@ export default function HomeScreen() {
     VOICES.map(v => v.name);
 
 
+  if (loading && !session) {
+      return (
+          <View style={{ flex: 1, backgroundColor: 'white', justifyContent: 'center', alignItems: 'center' }}>
+              <ActivityIndicator size="large" color="#3b82f6" />
+          </View>
+      );
+  }
+
   if (!session) {
       return <AuthScreen />;
   }
 
-  if (!hasSubscription) {
+  if (!hasSubscription && !loading) {
       return <PaywallScreen />;
   }
 
