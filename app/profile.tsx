@@ -20,39 +20,40 @@ export default function ProfileScreen() {
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
     const [selectedUpgrade, setSelectedUpgrade] = useState('');
 
+    const [loadingPlans, setLoadingPlans] = useState(true);
+
     React.useEffect(() => {
         fetchData();
     }, []);
 
     const fetchData = async () => {
         try {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-                setUser(user);
-                const { data: prof } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-                if (prof) setProfile(prof);
+            // 1. Get Session Immediately (Fast Cache)
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session?.user) return;
+            
+            setUser(session.user);
 
-                const { data: sub } = await supabase
-                    .from('user_subscriptions')
-                    .select('*, subscription_plans(*)')
-                    .eq('user_id', user.id)
-                    .eq('status', 'active')
-                    .single();
-                
-                if (sub?.subscription_plans) {
-                    setCurrentPlan(sub.subscription_plans.name);
-                }
+            // 2. Parallelize all expensive fetches
+            const [profileRes, subRes, plansRes] = await Promise.all([
+                supabase.from('profiles').select('*').eq('id', session.user.id).single(),
+                supabase.from('user_subscriptions').select('*, subscription_plans(*)').eq('user_id', session.user.id).eq('status', 'active').maybeSingle(),
+                supabase.from('subscription_plans').select('*').order('price', { ascending: true })
+            ]);
+
+            if (profileRes.data) setProfile(profileRes.data);
+            if (subRes.data?.subscription_plans) {
+                setCurrentPlan(subRes.data.subscription_plans.name);
             }
-
-            const { data: pList } = await supabase.from('subscription_plans').select('*').order('price', { ascending: true });
-            if (pList) {
-                setPlans(pList);
-                if (pList.length > 0) setSelectedUpgrade(pList[0].id);
+            if (plansRes.data) {
+                setPlans(plansRes.data);
+                if (plansRes.data.length > 0) setSelectedUpgrade(plansRes.data[0].id);
             }
         } catch (e) {
             console.error('Fetch Profile Data Error:', e);
         } finally {
             setLoading(false);
+            setLoadingPlans(false);
         }
     };
 
@@ -110,13 +111,6 @@ export default function ProfileScreen() {
         }
     };
 
-    if (loading && !showUpgradeModal) {
-        return (
-            <View style={{ flex: 1, backgroundColor: '#faf9fe', justifyContent: 'center', alignItems: 'center' }}>
-                <ActivityIndicator size="large" color="#3b82f6" />
-            </View>
-        );
-    }
 
     return (
         <SafeAreaView style={styles.container}>
@@ -146,20 +140,28 @@ export default function ProfileScreen() {
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 0 }}
                     >
-                        <View style={styles.planInfo}>
-                            <View style={styles.planIconCircle}>
-                                <Ionicons name="star" size={24} color="white" />
+                        {loading ? (
+                            <View style={{ flex: 1, height: 60, justifyContent: 'center' }}>
+                                <ActivityIndicator color="white" />
                             </View>
-                            <View>
-                                <Text style={styles.planBadge}>ACTIVE PLAN</Text>
-                                <Text style={styles.currentPlanName}>{currentPlan}</Text>
-                            </View>
-                        </View>
-                        
-                        <TouchableOpacity style={styles.upgradeBtn} onPress={() => setShowUpgradeModal(true)}>
-                            <Text style={styles.upgradeBtnText}>Upgrade Plan</Text>
-                            <Ionicons name="sparkles" size={14} color={Colors.light.primary} />
-                        </TouchableOpacity>
+                        ) : (
+                            <>
+                                <View style={styles.planInfo}>
+                                    <View style={styles.planIconCircle}>
+                                        <Ionicons name="star" size={24} color="white" />
+                                    </View>
+                                    <View>
+                                        <Text style={styles.planBadge}>ACTIVE PLAN</Text>
+                                        <Text style={styles.currentPlanName}>{currentPlan}</Text>
+                                    </View>
+                                </View>
+                                
+                                <TouchableOpacity style={styles.upgradeBtn} onPress={() => setShowUpgradeModal(true)}>
+                                    <Text style={styles.upgradeBtnText}>Upgrade Plan</Text>
+                                    <Ionicons name="sparkles" size={14} color={Colors.light.primary} />
+                                </TouchableOpacity>
+                            </>
+                        )}
                     </LinearGradient>
                 </View>
 
