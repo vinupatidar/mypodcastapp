@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, TextInput, KeyboardAvoidingView, Platform, Dimensions, FlatList, Animated } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, TextInput, KeyboardAvoidingView, Platform, Dimensions, FlatList, Animated, Alert } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '../constants/Colors';
@@ -74,7 +74,15 @@ export default function HomeScreen() {
       });
 
       if (!result.canceled) {
-          setSelectedFile(result.assets[0]);
+          const file = result.assets[0];
+          const sizeMB = (file.size || 0) / (1024 * 1024);
+          
+          if (sizeMB > 5) {
+              Alert.alert('File too large', 'Please upload a document smaller than 5MB.');
+              return;
+          }
+          
+          setSelectedFile(file);
       }
     } catch (err) {
       console.error('Pick Document Error:', err);
@@ -117,7 +125,7 @@ export default function HomeScreen() {
                             <Ionicons name="document-text" size={32} color={Colors.light.primary} />
                         </View>
                         <Text style={styles.uploadTitle}>Upload Document</Text>
-                        <Text style={styles.uploadSubtitle}>PDF, Word or Text files</Text>
+                        <Text style={styles.uploadSubtitle}>PDF, Word or Text files (Max 5MB)</Text>
                     </View>
                 )}
               </View>
@@ -125,7 +133,7 @@ export default function HomeScreen() {
 
             <View style={styles.dividerContainer}>
                 <View style={[styles.divider, { backgroundColor: '#eef' }]} />
-                <Text style={styles.dividerText}>OR PASTE TEXT</Text>
+                <Text style={styles.dividerText}>OR PASTE TEXT (Max 1000 words)</Text>
                 <View style={[styles.divider, { backgroundColor: '#eef' }]} />
             </View>
 
@@ -142,7 +150,18 @@ export default function HomeScreen() {
 
             <TouchableOpacity 
                 style={styles.generateButtonContainer} 
-                onPress={() => setShowOptions(true)}
+                onPress={() => {
+                   const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
+                   if (wordCount > 1000) {
+                       Alert.alert('Too many words', 'Please reduce your text to under 1000 words.');
+                       return;
+                   }
+                   if (!text.trim() && !selectedFile) {
+                       Alert.alert('Missing content', 'Please upload a file or paste some text first.');
+                       return;
+                   }
+                   setShowOptions(true);
+                }}
                 activeOpacity={0.8}
             >
                 <LinearGradient
