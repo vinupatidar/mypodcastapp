@@ -213,10 +213,10 @@ export default function HomeScreen() {
             </View>
             <TouchableOpacity 
                 style={styles.creditBadge}
-                onPress={() => Alert.alert('Credits', `You have ${remainingCredits} credits remaining. Want more? Check your profile.`)}
+                onPress={() => Alert.alert('Credits', `You have ${remainingCredits} credits remaining. Want more? Upgrade your plan.`)}
             >
-                <Ionicons name="star" size={16} color="#fbbf24" style={{ marginRight: 4 }} />
-                <Text style={styles.creditText}>{remainingCredits}</Text>
+                <Ionicons name="star" size={14} color="#fbbf24" style={{ marginRight: 4 }} />
+                <Text style={styles.creditText}>Credits: {remainingCredits}</Text>
             </TouchableOpacity>
           </View>
 
@@ -462,8 +462,24 @@ const styles = StyleSheet.create({
   textInputContainer: { backgroundColor: 'white', borderRadius: 20, padding: 16, height: 140, marginBottom: 24, elevation: 1 },
   textInput: { fontFamily: 'Inter_400Regular', fontSize: 15, color: Colors.light.onSurface, flex: 1, textAlignVertical: 'top' },
   
-  creditBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, shadowColor: '#fbbf24', shadowOpacity: 0.1, shadowRadius: 8, elevation: 2, borderWidth: 1, borderColor: 'rgba(251, 191, 36, 0.2)' },
-  creditText: { fontFamily: 'Inter_700Bold', fontSize: 14, color: Colors.light.onSurface },
+  creditBadge: { 
+    position: 'absolute',
+    top: -10,
+    right: 0,
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    backgroundColor: 'white', 
+    paddingHorizontal: 10, 
+    paddingVertical: 5, 
+    borderRadius: 12, 
+    shadowColor: '#fbbf24', 
+    shadowOpacity: 0.1, 
+    shadowRadius: 8, 
+    elevation: 2, 
+    borderWidth: 1, 
+    borderColor: 'rgba(251, 191, 36, 0.2)' 
+  },
+  creditText: { fontFamily: 'Inter_700Bold', fontSize: 12, color: Colors.light.onSurface },
 
   confirmationRow: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 20, paddingHorizontal: 4 },
   checkbox: { width: 20, height: 20, borderRadius: 6, borderWidth: 2, borderColor: '#3b82f6', marginRight: 12, marginTop: 2, justifyContent: 'center', alignItems: 'center' },

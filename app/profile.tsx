@@ -124,11 +124,11 @@ export default function ProfileScreen() {
                 
                 <View style={styles.profileHeader}>
                     <TouchableOpacity 
-                        style={[styles.creditBadge, { position: 'absolute', top: 0, right: 0 }]}
+                        style={styles.creditBadge}
                         onPress={() => Alert.alert('Credits', `You have ${remainingCredits} credits remaining. Want more? Upgrade your plan below.`)}
                     >
-                        <Ionicons name="star" size={16} color="#fbbf24" style={{ marginRight: 4 }} />
-                        <Text style={styles.creditText}>{remainingCredits}</Text>
+                        <Ionicons name="star" size={14} color="#fbbf24" style={{ marginRight: 4 }} />
+                        <Text style={styles.creditText}>Credits: {remainingCredits}</Text>
                     </TouchableOpacity>
 
                     <LinearGradient
@@ -386,6 +386,26 @@ const styles = StyleSheet.create({
     tabItem: { alignItems: 'center' },
     tabLabel: { fontFamily: 'Inter_400Regular', fontSize: 10, marginTop: 4, color: '#aaa' },
     activeTabLabel: { fontFamily: 'Inter_700Bold', color: Colors.light.primary },
-    creditBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, shadowColor: '#fbbf24', shadowOpacity: 0.1, shadowRadius: 8, elevation: 2, borderWidth: 1, borderColor: 'rgba(251, 191, 36, 0.2)' },
-    creditText: { fontFamily: 'Inter_700Bold', fontSize: 14, color: Colors.light.onSurface },
+    creditBadge: { 
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        flexDirection: 'row', 
+        alignItems: 'center', 
+        backgroundColor: 'white', 
+        paddingHorizontal: 10, 
+        paddingVertical: 5, 
+        borderRadius: 12, 
+        shadowColor: '#fbbf24', 
+        shadowOpacity: 0.1, 
+        shadowRadius: 8, 
+        elevation: 2, 
+        borderWidth: 1, 
+        borderColor: 'rgba(251, 191, 36, 0.2)' 
+    },
+    creditText: { 
+        fontFamily: 'Inter_700Bold', 
+        fontSize: 12, 
+        color: Colors.light.onSurface 
+    },
 });

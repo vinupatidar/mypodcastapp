@@ -74,10 +74,10 @@ export default function LibraryScreen() {
         </View>
         <TouchableOpacity 
             style={styles.creditBadge}
-            onPress={() => Alert.alert('Credits', `You have ${remainingCredits} credits remaining. Want more? Check your profile.`)}
+            onPress={() => Alert.alert('Credits', `You have ${remainingCredits} credits remaining. Want more? Upgrade your plan.`)}
         >
-            <Ionicons name="star" size={16} color="#fbbf24" style={{ marginRight: 4 }} />
-            <Text style={styles.creditText}>{remainingCredits}</Text>
+            <Ionicons name="star" size={14} color="#fbbf24" style={{ marginRight: 4 }} />
+            <Text style={styles.creditText}>Credits: {remainingCredits}</Text>
         </TouchableOpacity>
       </View>
 
@@ -329,11 +329,14 @@ const styles = StyleSheet.create({
     color: Colors.light.primary,
   },
   creditBadge: { 
+    position: 'absolute',
+    top: -10,
+    right: 0,
     flexDirection: 'row', 
     alignItems: 'center', 
     backgroundColor: 'white', 
-    paddingHorizontal: 12, 
-    paddingVertical: 6, 
+    paddingHorizontal: 10, 
+    paddingVertical: 5, 
     borderRadius: 12, 
     shadowColor: '#fbbf24', 
     shadowOpacity: 0.1, 
@@ -344,7 +347,7 @@ const styles = StyleSheet.create({
   },
   creditText: { 
     fontFamily: 'Inter_700Bold', 
-    fontSize: 14, 
+    fontSize: 12, 
     color: Colors.light.onSurface 
   },
 });
