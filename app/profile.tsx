@@ -130,7 +130,14 @@ export default function ProfileScreen() {
                 <Text style={styles.headerTitle}>Profile</Text>
                 <TouchableOpacity 
                     style={styles.creditBadge}
-                    onPress={() => Alert.alert('Credits', `You have ${remainingCredits} credits remaining. Want more? Upgrade your plan below.`)}
+                    onPress={() => Alert.alert(
+                        'Credits', 
+                        `You have ${remainingCredits} credits remaining. Want to buy more?`,
+                        [
+                            { text: 'Later', style: 'cancel' },
+                            { text: 'Buy Now', onPress: () => router.push('/buy-credits') }
+                        ]
+                    )}
                 >
                     <Ionicons name="star" size={14} color="#fbbf24" style={{ marginRight: 4 }} />
                     <Text style={styles.creditText}>Credits: {remainingCredits}</Text>
