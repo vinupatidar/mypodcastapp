@@ -329,6 +329,7 @@ export default function HomeScreen() {
                             <Text style={[styles.label, { color: Colors.light.primary }]}>{summaryWords} words</Text>
                         </View>
                         <Slider 
+                            key={`summary-slider-${showOptions}`}
                             style={styles.slider} 
                             minimumValue={100} 
                             maximumValue={1000} 
@@ -345,6 +346,7 @@ export default function HomeScreen() {
                             <Text style={[styles.label, { color: Colors.light.primary }]}>{voiceSpeed.toFixed(1)}x</Text>
                         </View>
                         <Slider 
+                            key={`speed-slider-${showOptions}`}
                             style={styles.slider} 
                             minimumValue={0.5} 
                             maximumValue={2.0} 
