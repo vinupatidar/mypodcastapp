@@ -60,7 +60,7 @@ export default function AuthScreen() {
     return (
         <View style={styles.container}>
             <LinearGradient
-                colors={['#103E5B', '#000000']}
+                colors={['#103E5B', '#071d2b']}
                 style={StyleSheet.absoluteFillObject}
             />
             
@@ -68,108 +68,119 @@ export default function AuthScreen() {
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 style={{ flex: 1 }}
             >
-                <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-                    <View style={styles.header}>
-                        <View style={styles.logoContainer}>
-                            <LinearGradient
-                                colors={['#3b82f6', '#2dd4bf']}
-                                style={styles.logoIcon}
-                            >
-                                <Ionicons name="mic" size={40} color="white" />
-                            </LinearGradient>
-                        </View>
-                        <Text style={styles.title}>MyPodcast</Text>
-                        <Text style={styles.subtitle}>{isLogin ? 'Welcome Back!' : 'Create Your Account'}</Text>
-                    </View>
-
-                    <View style={styles.authCard}>
-                        {/* Tab Switcher */}
-                        <View style={styles.tabContainer}>
-                            <TouchableOpacity 
-                                style={[styles.tab, isLogin && styles.activeTab]} 
-                                onPress={() => setIsLogin(true)}
-                            >
-                                <Text style={[styles.tabText, isLogin && styles.activeTabText]}>Login</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity 
-                                style={[styles.tab, !isLogin && styles.activeTab]} 
-                                onPress={() => setIsLogin(false)}
-                            >
-                                <Text style={[styles.tabText, !isLogin && styles.activeTabText]}>Register</Text>
-                            </TouchableOpacity>
-                        </View>
-
-                        <View style={styles.form}>
-                            {!isLogin && (
-                                <View style={styles.inputContainer}>
-                                    <Ionicons name="person-outline" size={20} color="#888" style={styles.inputIcon} />
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="Full Name"
-                                        placeholderTextColor="#888"
-                                        value={fullName}
-                                        onChangeText={setFullName}
-                                    />
-                                </View>
-                            )}
-
-                            <View style={styles.inputContainer}>
-                                <Ionicons name="mail-outline" size={20} color="#888" style={styles.inputIcon} />
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Email Address"
-                                    placeholderTextColor="#888"
-                                    keyboardType="email-address"
-                                    autoCapitalize="none"
-                                    value={email}
-                                    onChangeText={setEmail}
-                                />
-                            </View>
-
-                            <View style={styles.inputContainer}>
-                                <Ionicons name="lock-closed-outline" size={20} color="#888" style={styles.inputIcon} />
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Password"
-                                    placeholderTextColor="#888"
-                                    secureTextEntry
-                                    value={password}
-                                    onChangeText={setPassword}
-                                />
-                            </View>
-
-                            {isLogin && (
-                                <TouchableOpacity style={styles.forgotBtn}>
-                                    <Text style={styles.forgotText}>Forgot Password?</Text>
-                                </TouchableOpacity>
-                            )}
-
-                            <TouchableOpacity 
-                                style={[styles.actionBtn, loading && { opacity: 0.7 }]} 
-                                onPress={handleAuth}
-                                disabled={loading}
-                            >
+                <SafeAreaView style={{ flex: 1 }}>
+                    <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+                        <View style={styles.header}>
+                            <View style={styles.logoContainer}>
                                 <LinearGradient
                                     colors={['#3b82f6', '#2dd4bf']}
-                                    start={{ x: 0, y: 0 }}
-                                    end={{ x: 1, y: 0 }}
-                                    style={styles.actionGradient}
+                                    style={styles.logoIcon}
                                 >
-                                    {loading ? (
-                                        <ActivityIndicator color="white" />
-                                    ) : (
-                                        <Text style={styles.actionBtnText}>{isLogin ? 'Login' : 'Create Account'}</Text>
-                                    )}
+                                    <Ionicons name="mic" size={42} color="white" />
                                 </LinearGradient>
+                            </View>
+                            <Text style={styles.title}>MYPODCAST</Text>
+                        </View>
+
+                        <View style={styles.authCard}>
+                            {/* Tab Switcher */}
+                            <View style={styles.tabContainer}>
+                                <TouchableOpacity 
+                                    style={[styles.tab, isLogin && styles.activeTab]} 
+                                    onPress={() => {
+                                        setIsLogin(true);
+                                        setEmail('');
+                                        setPassword('');
+                                    }}
+                                >
+                                    <Text style={[styles.tabText, isLogin && styles.activeTabText]}>Login</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity 
+                                    style={[styles.tab, !isLogin && styles.activeTab]} 
+                                    onPress={() => {
+                                        setIsLogin(false);
+                                        setEmail('');
+                                        setPassword('');
+                                    }}
+                                >
+                                    <Text style={[styles.tabText, !isLogin && styles.activeTabText]}>Register</Text>
+                                </TouchableOpacity>
+                            </View>
+
+                            <View style={styles.form}>
+                                {!isLogin && (
+                                    <View style={styles.inputContainer}>
+                                        <Ionicons name="person-outline" size={20} color="rgba(255,255,255,0.4)" style={styles.inputIcon} />
+                                        <TextInput
+                                            style={styles.input}
+                                            placeholder="Full Name"
+                                            placeholderTextColor="rgba(255,255,255,0.3)"
+                                            value={fullName}
+                                            onChangeText={setFullName}
+                                        />
+                                    </View>
+                                )}
+
+                                <View style={styles.inputContainer}>
+                                    <Ionicons name="mail-outline" size={20} color="rgba(255,255,255,0.4)" style={styles.inputIcon} />
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Email Address"
+                                        placeholderTextColor="rgba(255,255,255,0.3)"
+                                        keyboardType="email-address"
+                                        autoCapitalize="none"
+                                        value={email}
+                                        onChangeText={setEmail}
+                                    />
+                                </View>
+
+                                <View style={styles.inputContainer}>
+                                    <Ionicons name="lock-closed-outline" size={20} color="rgba(255,255,255,0.4)" style={styles.inputIcon} />
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Password"
+                                        placeholderTextColor="rgba(255,255,255,0.3)"
+                                        secureTextEntry
+                                        value={password}
+                                        onChangeText={setPassword}
+                                    />
+                                </View>
+
+                                {isLogin && (
+                                    <TouchableOpacity style={styles.forgotBtn}>
+                                        <Text style={styles.forgotText}>Forgot Password?</Text>
+                                    </TouchableOpacity>
+                                )}
+
+                                <TouchableOpacity 
+                                    style={[styles.actionBtn, loading && { opacity: 0.7 }]} 
+                                    onPress={handleAuth}
+                                    disabled={loading}
+                                >
+                                    <LinearGradient
+                                        colors={['#3b82f6', '#2dd4bf']}
+                                        start={{ x: 0, y: 0 }}
+                                        end={{ x: 1, y: 0 }}
+                                        style={styles.actionGradient}
+                                    >
+                                        {loading ? (
+                                            <ActivityIndicator color="white" />
+                                        ) : (
+                                            <Text style={styles.actionBtnText}>{isLogin ? 'LOG IN' : 'CREATE ACCOUNT'}</Text>
+                                        )}
+                                    </LinearGradient>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+
+                        <View style={styles.footer}>
+                            <Text style={styles.footerText}>By continuing, you agree to our</Text>
+                            <TouchableOpacity>
+                                <Text style={styles.footerLink}>Terms & Conditions</Text>
                             </TouchableOpacity>
                         </View>
-                    </View>
-
-                    <View style={styles.footer}>
-                        <Text style={styles.footerText}>By continuing, you agree to our</Text>
-                        <Text style={styles.footerLink}>Terms & Conditions</Text>
-                    </View>
-                </ScrollView>
+                    </ScrollView>
+                </SafeAreaView>
             </KeyboardAvoidingView>
         </View>
     );
@@ -177,31 +188,50 @@ export default function AuthScreen() {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#103E5B' },
-    scrollContent: { padding: 30, paddingTop: SCREEN_HEIGHT * 0.1 },
-    header: { alignItems: 'center', marginBottom: 40 },
-    logoContainer: { marginBottom: 20 },
-    logoIcon: { width: 80, height: 80, borderRadius: 24, justifyContent: 'center', alignItems: 'center', shadowColor: '#3b82f6', shadowOpacity: 0.5, shadowRadius: 15, elevation: 10 },
-    title: { color: 'white', fontSize: 32, fontFamily: 'Inter_700Bold' },
-    subtitle: { color: 'rgba(255,255,255,0.6)', fontSize: 16, marginTop: 8 },
+    scrollContent: { padding: 30, paddingTop: SCREEN_HEIGHT * 0.08, paddingBottom: 50 },
+    header: { alignItems: 'center', marginBottom: 50 },
+    logoContainer: { marginBottom: 25 },
+    logoIcon: { width: 90, height: 90, borderRadius: 28, justifyContent: 'center', alignItems: 'center', shadowColor: '#3b82f6', shadowOpacity: 0.4, shadowRadius: 20, elevation: 15 },
+    title: { color: 'white', fontSize: 36, fontFamily: 'Inter_700Bold', letterSpacing: 3 },
     
-    authCard: { backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 32, padding: 24, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
-    tabContainer: { flexDirection: 'row', backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: 16, padding: 4, marginBottom: 24 },
-    tab: { flex: 1, paddingVertical: 12, alignItems: 'center', borderRadius: 12 },
-    activeTab: { backgroundColor: 'rgba(255,255,255,0.1)' },
-    tabText: { color: 'rgba(255,255,255,0.4)', fontFamily: 'Inter_700Bold', fontSize: 14 },
-    activeTabText: { color: 'white' },
+    authCard: { 
+        backgroundColor: 'rgba(255,255,255,0.06)', 
+        borderRadius: 40, 
+        padding: 24, 
+        borderWidth: 1, 
+        borderColor: 'rgba(255,255,255,0.1)',
+        shadowColor: '#000',
+        shadowOpacity: 0.2,
+        shadowRadius: 30,
+        elevation: 10
+    },
+    tabContainer: { flexDirection: 'row', backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: 20, padding: 5, marginBottom: 30 },
+    tab: { flex: 1, paddingVertical: 14, alignItems: 'center', borderRadius: 16 },
+    activeTab: { backgroundColor: 'white' },
+    tabText: { color: 'rgba(255,255,255,0.5)', fontFamily: 'Inter_700Bold', fontSize: 13, letterSpacing: 0.5 },
+    activeTabText: { color: '#103E5B' },
     
-    form: { gap: 16 },
-    inputContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: 16, paddingHorizontal: 16, height: 60, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
-    inputIcon: { marginRight: 12 },
-    input: { flex: 1, color: 'white', fontSize: 16 },
-    forgotBtn: { alignSelf: 'flex-end', marginTop: 4 },
+    form: { gap: 18 },
+    inputContainer: { 
+        flexDirection: 'row', 
+        alignItems: 'center', 
+        backgroundColor: 'rgba(0,0,0,0.25)', 
+        borderRadius: 18, 
+        paddingHorizontal: 20, 
+        height: 64, 
+        borderWidth: 1, 
+        borderColor: 'rgba(255,255,255,0.08)' 
+    },
+    inputIcon: { marginRight: 15 },
+    input: { flex: 1, color: 'white', fontSize: 16, fontFamily: 'Inter_400Regular' },
+    forgotBtn: { alignSelf: 'flex-end', marginTop: 2 },
     forgotText: { color: '#3b82f6', fontSize: 13, fontFamily: 'Inter_700Bold' },
-    actionBtn: { height: 64, borderRadius: 20, overflow: 'hidden', marginTop: 10 },
-    actionGradient: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    actionBtnText: { color: 'white', fontSize: 18, fontFamily: 'Inter_700Bold' },
     
-    footer: { marginTop: 40, alignItems: 'center' },
-    footerText: { color: 'rgba(255,255,255,0.4)', fontSize: 12 },
-    footerLink: { color: 'rgba(255,255,255,0.6)', fontSize: 12, fontFamily: 'Inter_700Bold', marginTop: 4 },
+    actionBtn: { height: 68, borderRadius: 22, overflow: 'hidden', marginTop: 12, elevation: 8, shadowColor: '#3b82f6', shadowOpacity: 0.4, shadowRadius: 15 },
+    actionGradient: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    actionBtnText: { color: 'white', fontSize: 16, fontFamily: 'Inter_800ExtraBold', letterSpacing: 1.5 },
+    
+    footer: { marginTop: 45, alignItems: 'center' },
+    footerText: { color: 'rgba(255,255,255,0.35)', fontSize: 12, fontFamily: 'Inter_400Regular' },
+    footerLink: { color: 'rgba(255,255,255,0.6)', fontSize: 12, fontFamily: 'Inter_700Bold', marginTop: 6, textDecorationLine: 'underline' },
 });
