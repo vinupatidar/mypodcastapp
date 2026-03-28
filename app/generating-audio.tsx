@@ -203,9 +203,9 @@ export default function GeneratingAudioScreen() {
     <SafeAreaView style={styles.masterContainer}>
       <View style={styles.container}>
         <View style={styles.navHeader}>
-          <TouchableOpacity onPress={() => router.replace('/')} style={styles.backButton}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
             <Ionicons name="arrow-back" size={20} color={Colors.light.primary} />
-            <Text style={styles.homeButtonText}>HOME</Text>
+            <Text style={styles.homeButtonText}>BACK</Text>
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Podcasting...</Text>
           <View style={{ width: 60 }} />
