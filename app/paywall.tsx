@@ -87,7 +87,7 @@ export default function PaywallScreen() {
 
                     <TouchableOpacity style={styles.signoutBtn} onPress={() => console.log('Sign Out')}>
                         <Ionicons name="log-out-outline" size={20} color="#FF6347" />
-                        <Text style={styles.signoutText}>Log Out from App</Text>
+                        <Text style={styles.signoutText}>Sign Out</Text>
                     </TouchableOpacity>
                     
                     <View style={{ height: 40 }} />
