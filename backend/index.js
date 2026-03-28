@@ -46,15 +46,18 @@ if (!fs.existsSync(DB_FILE)) {
 const upload = multer({ dest: 'uploads/' });
 
 /**
- * ElevenLabs TTS Integration - UPDATED with better logging
+ * ElevenLabs TTS Integration - Updated with Speed and Multi-language support
  */
-async function generateElevenLabsTTS(text, filename) {
+async function generateElevenLabsTTS(text, filename, speed = 1.0) {
   if (!ELEVENLABS_API_KEY || ELEVENLABS_API_KEY === 'your_elevenlabs_api_key_here') {
     console.warn("⚠️ ELEVENLABS_API_KEY is invalid or missing in .env.");
     return null;
   }
 
-  console.log(`🎙️ Generating TTS for text (${text.length} chars) using ElevenLabs...`);
+  // Normalize speed between 0.7 and 1.2
+  const normalizedSpeed = Math.min(Math.max(speed, 0.7), 1.2);
+
+  console.log(`🎙️ Generating TTS (Speed: ${normalizedSpeed}) for text (${text.length} chars) using ElevenLabs...`);
 
   try {
     const response = await axios({
@@ -66,10 +69,11 @@ async function generateElevenLabsTTS(text, filename) {
       },
       data: {
         text: text,
-        model_id: "eleven_multilingual_v2", // More robust model
+        model_id: "eleven_multilingual_v2", // Supports 29 languages
         voice_settings: {
           stability: 0.5,
-          similarity_boost: 0.75
+          similarity_boost: 0.75,
+          speed: normalizedSpeed // Added speed control
         }
       },
       responseType: 'stream'
@@ -91,8 +95,6 @@ async function generateElevenLabsTTS(text, filename) {
     });
   } catch (error) {
     if (error.response && error.response.data) {
-      // Since responseType is 'stream', error data is also a stream.
-      // We need to collect the chunks to see the actual error message.
       let errorData = '';
       try {
         for await (const chunk of error.response.data) {
@@ -135,20 +137,21 @@ app.get('/episodes', (req, res) => {
 });
 
 /**
- * Main Sumarization Endpoint
+ * Main Sumarization Endpoint - Updated for Language and Category style
  */
 app.post('/summarize', upload.single('file'), async (req, res) => {
-  console.log(`⚡ Received summarize request for category: ${req.body.category}`);
+  console.log(`⚡ Received summarize request for category: ${req.body.category}, language: ${req.body.language}`);
   try {
     const text = req.body.text;
     const category = req.body.category || 'General';
+    const language = req.body.language || 'English (US)';
     const maxWords = parseInt(req.body.maxWords, 10) || 500;
-
+    const speed = parseFloat(req.body.speed) || 1.0;
+    
     let contentToSummarize = text || '';
 
     // Handle file upload
     if (req.file) {
-      console.log(`📄 Processing file: ${req.file.originalname}`);
       const filePath = req.file.path;
       const fileExt = path.extname(req.file.originalname).toLowerCase();
       try {
@@ -170,19 +173,21 @@ app.post('/summarize', upload.single('file'), async (req, res) => {
     }
 
     if (!contentToSummarize || contentToSummarize.trim().length === 0) {
-      return res.status(400).json({ error: 'No content provided or extracted after parsing.' });
+      return res.status(400).json({ error: 'No content provided.' });
     }
 
-    console.log(`🤖 Summarizing content with OpenAI...`);
-    const systemPrompt = `You are an expert podcast scriptwriter. 
-    Summarize the provided content into a podcast format for the category: ${category}.
-    The summary must be under ${maxWords} words.
+    console.log(`🤖 Summarizing content (${language}) in style: ${category}...`);
     
-    You must provide TWO distinct responses in a JSON format:
-    1. "summary": A clean, editorial-style summary of the content.
-    2. "voice_script": The same summary text, optimized for TTS (natural speech flow).
-       
-    The output MUST be a valid JSON object with keys "summary" and "voice_script".`;
+    // REFINEMENT: Explicit Language and Style instruction for OpenAI
+    const systemPrompt = `You are a professional podcast scriptwriter. 
+    Task: Summarize the provided content into a podcast format.
+    Style/Category: ${category} (Adjust tone, vocabulary, and pacing to match this style).
+    Language: The entire response MUST be written in ${language}. 
+    Length: Under ${maxWords} words.
+    
+    Output Format: MUST be a valid JSON object with:
+    1. "summary": A clean editorial summary in ${language}.
+    2. "voice_script": The summary optimized for natural podcast speech in ${language}.`;
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
@@ -191,38 +196,33 @@ app.post('/summarize', upload.single('file'), async (req, res) => {
     });
 
     const responseData = JSON.parse(completion.choices[0].message.content);
-    console.log(`✅ OpenAI Summary complete.`);
+    console.log(`✅ OpenAI Summary complete in ${language}.`);
 
-    // Generate Audio with ElevenLabs
+    // Generate Audio with ElevenLabs - Passing Speed
     let audioUrl = null;
     let filename = `podcast_${Date.now()}.mp3`;
-    const resultFile = await generateElevenLabsTTS(responseData.voice_script, filename);
-
+    const resultFile = await generateElevenLabsTTS(responseData.voice_script, filename, speed);
+    
     if (resultFile) {
       const host = req.get('host');
-      // Check if host includes localhost and user wants physical device IP
-      // Usually req.get('host') is the IP address if coming from phone
       audioUrl = `http://${host}/outputs/${resultFile}`;
       console.log(`🔗 Audio URL: ${audioUrl}`);
     } else {
       console.warn(`⚠️ Background audio generation failed.`);
     }
 
-    // Persist Episode for Library
     const newEpisode = {
       id: Date.now().toString(),
-      title: category + " Podcast - " + new Date().toLocaleDateString(),
+      title: `${category} Hub - ${new Date().toLocaleDateString()} (${language})`,
       summary: responseData.summary,
       audioUrl: audioUrl,
       category: category,
+      language: language,
       timestamp: new Date().toISOString()
     };
     saveEpisode(newEpisode);
 
-    res.json({
-      success: true,
-      data: newEpisode
-    });
+    res.json({ success: true, data: newEpisode });
 
   } catch (error) {
     console.error('❌ Summarization Error:', error);

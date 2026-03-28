@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
   uploadTitle: { fontFamily: 'Inter_700Bold', fontSize: 18, color: Colors.light.onSurface, marginBottom: 4 },
   uploadSubtitle: { fontFamily: 'Inter_400Regular', fontSize: 12, color: Colors.light.onSurfaceVariant },
   quickSelectors: { flexDirection: 'row', gap: 10, marginBottom: 20 },
-  miniPicker: { flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', padding: 14, borderRadius: 16, borderWeight: 1, borderColor: '#f0f0f0', gap: 8, elevation: 1 },
+  miniPicker: { flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', padding: 14, borderRadius: 16, borderWidth: 1, borderColor: '#f0f0f0', gap: 8, elevation: 1 },
   miniPickerText: { fontFamily: 'Inter_700Bold', fontSize: 12, color: Colors.light.onSurface },
   dividerContainer: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
   divider: { flex: 1, height: 1 },

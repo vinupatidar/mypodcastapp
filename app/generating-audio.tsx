@@ -102,7 +102,9 @@ export default function GeneratingAudioScreen() {
       }
       if (params.text) formData.append('text', params.text as string);
       formData.append('category', selectedCategory);
+      formData.append('language', selectedLanguage);
       formData.append('maxWords', summaryWords.toString());
+      formData.append('speed', voiceSpeed.toString());
 
       const response = await fetch(`${API_BASE_URL}/summarize`, {
         method: 'POST',
