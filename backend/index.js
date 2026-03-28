@@ -21,7 +21,7 @@ const openai = new OpenAI({
 
 // ElevenLabs Configuration
 const ELEVENLABS_API_KEY = (process.env.ELEVENLABS_API_KEY || '').trim();
-const ELEVEN_VOICE_ID = "alFofuDn3cOwyoz1i44T"; // Rachel - Default Voice
+const ELEVEN_VOICE_ID = "pNInz6obpgDQGcFmaJgB"; // Adam - Standard Free Tier Voice
 
 app.use(cors());
 app.use(express.json());
