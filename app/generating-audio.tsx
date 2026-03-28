@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, Dimensions, Modal, FlatList, ActivityIndicator, Platform } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, Dimensions, FlatList, ActivityIndicator, Platform } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '../constants/Colors';
@@ -10,15 +10,14 @@ import { Audio } from 'expo-av';
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
 
-// Computer's Local IP for Physical Devices (updated via earlier task)
-const API_BASE_URL = 'http://192.168.1.2:5009';
+// Computer's Local IP for Physical Devices
+const API_BASE_URL = 'http://192.168.1.2:5010';
 
 const LANGUAGES = [
-  'English (US)', 'English (UK)', 'Hindi', 'Spanish', 'French', 'German', 'Chinese (Mandarin)', 
+  'Hindi', 'English (US)', 'English (UK)', 'Spanish', 'French', 'German', 'Chinese (Mandarin)', 
   'Japanese', 'Korean', 'Arabic', 'Portuguese', 'Russian', 'Italian', 'Turkish', 'Dutch', 
-  'Polish', 'Swedish', 'Indonesian', 'Vietnamese', 'Thai', 'Greek', 'Bengali', 'Marathi', 
-  'Telugu', 'Tamil', 'Gujarati', 'Urdu', 'Kannada', 'Malayalam', 'Punjabi', 'Persian', 
-  'Hebrew', 'Ukrainian', 'Czech', 'Danish', 'Finnish', 'Norwegian', 'Hungarian', 'Romanian'
+  'Polish', 'Swedish', 'Indonesian', 'Vietnamese', 'Thai', 'Bengali', 'Marathi', 
+  'Telugu', 'Tamil', 'Gujarati', 'Urdu', 'Kannada', 'Malayalam', 'Punjabi'
 ];
 
 const CATEGORIES = [
@@ -28,20 +27,19 @@ const CATEGORIES = [
   'Political', 'Spiritual', 'Documentary', 'Personal Journal', 'Meditative', 'ASMR', 
   'Horror', 'Drama', 'Biography', 'Self-Improvement', 'Health & Fitness', 'Food & Cooking', 
   'Gardening', 'Parenting', 'Relationship Advice', 'Finance', 'Real Estate', 'Law', 
-  'Mythology', 'Gaming', 'Movie Reviews', 'Anime', 'AI & Future', 'Entrepreneurship'
+  'Mythology', 'Gaming', 'Movie Reviews', 'Anime', 'AI & Future', 'Entrepreneurship', 'Startup Talk',
+  'Productivity', 'Case Study', 'Product Review'
 ];
 
 const VOICES = [
-  { id: 'aria', name: 'Aria — Warm & Friendly' },
-  { id: 'marcus', name: 'Marcus — Authoritative' },
-  { id: 'sofia', name: 'Sofia — Soft & Calm' },
-  { id: 'jake', name: 'Jake — High Energy' }
+  { id: 'pNInz6obpgDQGcFmaJgB', name: 'Adam (Deep / Narrative)' },
+  { id: '21m00T83T45QR7oViVXq', name: 'Rachel (Clear / Casual)' },
+  { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Bella (Soft / Warm)' },
+  { id: 'VR6AewrOoPST9074nu7h', name: 'Arnold (Powerful / Deep)' },
+  { id: 'AZnzlk1XhxPqc8pJ86nE', name: 'Domi (Friendly / Professional)' },
+  { id: 'ErXw9S1aaBXv59cHq9vK', name: 'Antoni (Smooth / Calm)' }
 ];
 
-/**
- * Generating Audio Screen
- * Now integrates Sarvam AI TTS playback with expo-av.
- */
 export default function GeneratingAudioScreen() {
   const params = useLocalSearchParams();
   const soundRef = useRef<Audio.Sound | null>(null);
@@ -55,13 +53,13 @@ export default function GeneratingAudioScreen() {
   const [summary, setSummary] = useState('');
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   
-  // Option States
+  // Option States (Synced with Params)
   const [selectedVoice, setSelectedVoice] = useState(
     VOICES.find(v => v.id === params.voiceId) || VOICES[0]
   );
   const [summaryWords, setSummaryWords] = useState(Number(params.maxWords) || 500);
   const [voiceSpeed, setVoiceSpeed] = useState(Number(params.speed) || 1.0);
-  const [selectedLanguage, setSelectedLanguage] = useState((params.language as string) || 'English (US)');
+  const [selectedLanguage, setSelectedLanguage] = useState((params.language as string) || 'Hindi');
   const [selectedCategory, setSelectedCategory] = useState((params.category as string) || 'Story Telling');
 
   const [pickerVisible, setPickerVisible] = useState(false);
@@ -69,13 +67,11 @@ export default function GeneratingAudioScreen() {
 
   useEffect(() => {
     if (params.audioUrl && params.summary) {
-        // Pre-loaded from Library
         setSummary(params.summary as string);
         setAudioUrl(params.audioUrl as string);
         playAudio(params.audioUrl as string);
         setIsGenerating(false);
     } else {
-        // New generation
         generateContent();
     }
     
@@ -88,7 +84,7 @@ export default function GeneratingAudioScreen() {
 
   const generateContent = async () => {
     setIsGenerating(true);
-    setSummary(''); // Clear stale summary
+    setSummary(''); 
     setAudioUrl(null);
     setIsPlaying(false);
     
@@ -102,12 +98,14 @@ export default function GeneratingAudioScreen() {
           } as any);
       }
       if (params.text) formData.append('text', params.text as string);
+      
+      // Use latest user-selected options
       formData.append('category', selectedCategory);
       formData.append('language', selectedLanguage);
       formData.append('maxWords', summaryWords.toString());
       formData.append('speed', voiceSpeed.toString());
+      formData.append('voiceId', selectedVoice.id);
 
-      console.log('📡 Sending request to backend with speed:', voiceSpeed);
       const response = await fetch(`${API_BASE_URL}/summarize`, {
         method: 'POST',
         headers: { 'Accept': 'application/json' },
@@ -115,7 +113,6 @@ export default function GeneratingAudioScreen() {
       });
 
       const result = await response.json();
-      console.log('📥 Backend Response Summary:', result.data?.summary?.substring(0, 50) + '...');
       if (result.success) {
         setSummary(result.data.summary);
         if (result.data.audioUrl) {
@@ -132,9 +129,6 @@ export default function GeneratingAudioScreen() {
     }
   };
 
-  /**
-   * Load and Play Audio with expo-av
-   */
   const playAudio = async (url: string) => {
     try {
         if (soundRef.current) {
@@ -161,6 +155,18 @@ export default function GeneratingAudioScreen() {
 
   const togglePlayback = async () => {
       if (!soundRef.current) return;
+      
+      const status = await soundRef.current.getStatusAsync();
+      if (status.isLoaded) {
+          // Restart if already finished
+          if (status.didJustFinish || (status.positionMillis && status.durationMillis && status.positionMillis >= status.durationMillis - 100)) {
+              await soundRef.current.setPositionAsync(0);
+              await soundRef.current.playAsync();
+              setIsPlaying(true);
+              return;
+          }
+      }
+
       if (isPlaying) {
           await soundRef.current.pauseAsync();
           setIsPlaying(false);
@@ -210,85 +216,46 @@ export default function GeneratingAudioScreen() {
                   <Text style={styles.badgeText}>GENERATING AUDIO SESSION</Text>
               </View>
 
-              {/* Visualization Circle */}
               <View style={styles.vizWrapper}>
                   <View style={styles.outerCircle}>
                       <View style={styles.innerCircle}>
                           <View style={styles.waveformContainer}>
                               {[...Array(isPlaying ? 8 : 1)].map((_, i) => (
-                                  <View 
-                                    key={i} 
-                                    style={[
-                                        styles.wave, 
-                                        { 
-                                            height: isPlaying ? 20 + Math.random() * 30 : 2,
-                                            backgroundColor: isPlaying ? Colors.light.primary : 'rgba(0, 88, 188, 0.2)'
-                                        }
-                                    ]} 
-                                  />
+                                  <View key={i} style={[styles.wave, { height: isPlaying ? 20 + Math.random() * 30 : 2, backgroundColor: isPlaying ? Colors.light.primary : 'rgba(0, 88, 188, 0.2)' }]} />
                               ))}
                           </View>
-                          <Ionicons 
-                            name={isPlaying ? "headset" : "mic"} 
-                            size={32} 
-                            color={isPlaying ? Colors.light.primary : Colors.light.onSurfaceVariant} 
-                          />
-                          <Text style={styles.vizLabel}>{selectedVoice.name.split(' — ')[0].toUpperCase()}</Text>
+                          <Ionicons name={isPlaying ? "headset" : "mic"} size={32} color={isPlaying ? Colors.light.primary : Colors.light.onSurfaceVariant} />
+                          <Text style={styles.vizLabel}>{selectedVoice.name.split(' (')[0].toUpperCase()}</Text>
                       </View>
                   </View>
               </View>
 
-              {/* Playback Controls */}
               <View style={styles.quickActions}>
                   <TouchableOpacity style={styles.quickActionButton} onPress={togglePlayback} disabled={!audioUrl}>
-                      <LinearGradient
-                          colors={audioUrl ? Colors.light.signatureGradient : ['#ccc', '#ddd']}
-                          style={styles.quickActionGradient}
-                      >
+                      <LinearGradient colors={audioUrl ? Colors.light.signatureGradient : ['#ccc', '#ddd']} style={styles.quickActionGradient}>
                           <Ionicons name={isPlaying ? "pause" : "play"} size={24} color="white" />
                       </LinearGradient>
                       <Text style={styles.quickActionLabel}>{isPlaying ? "PAUSE" : "PLAY"}</Text>
                   </TouchableOpacity>
 
-                  <TouchableOpacity 
-                    style={styles.quickActionButton} 
-                    onPress={() => setShowOptions(true)}
-                  >
-                      <LinearGradient
-                          colors={Colors.light.signatureGradient}
-                          style={styles.quickActionGradient}
-                      >
+                  <TouchableOpacity style={styles.quickActionButton} onPress={() => setShowOptions(true)}>
+                      <LinearGradient colors={Colors.light.signatureGradient} style={styles.quickActionGradient}>
                           <Ionicons name="refresh" size={24} color="white" />
                       </LinearGradient>
                       <Text style={styles.quickActionLabel}>REGENERATE</Text>
                   </TouchableOpacity>
               </View>
 
-              {/* Results Preview */}
               <View style={styles.previewSection}>
                   <Text style={styles.sectionTitle}>Podcast Summary</Text>
                   <View style={styles.previewCard}>
                       {isGenerating ? (
                         <View style={{ paddingVertical: 40, alignItems: 'center' }}>
                            <ActivityIndicator size="large" color={Colors.light.primary} />
-                           <Text style={[styles.processingText, { marginTop: 16 }]}>Crafting voice script with Sarvam AI...</Text>
+                           <Text style={[styles.processingText, { marginTop: 16 }]}>Crafting script with AI...</Text>
                         </View>
                       ) : (
-                        <>
                           <Text style={styles.previewContent}>{summary}</Text>
-                          
-                          <View style={styles.processingBar}>
-                              <Ionicons name="sparkles" size={16} color={Colors.light.primary} />
-                              <Text style={styles.processingText}>Generated audio available below</Text>
-                          </View>
-
-                          {audioUrl && (
-                             <View style={styles.voiceScriptBadge}>
-                                <Ionicons name="radio" size={14} color={Colors.light.primary} />
-                                <Text style={styles.voiceScriptBadgeText}>Sarvam AI Voice: Tanya ⚡</Text>
-                             </View>
-                          )}
-                        </>
                       )}
                   </View>
               </View>
@@ -302,19 +269,31 @@ export default function GeneratingAudioScreen() {
         </View>
       </View>
 
-      {/* REGENERATION OPTIONS */}
-      <Modal visible={showOptions} animationType="slide" transparent onRequestClose={() => setShowOptions(false)}>
-        <View style={styles.modalOverlay}>
-            <TouchableOpacity style={styles.dismissOverlay} activeOpacity={1} onPress={() => setShowOptions(false)} />
-            <View style={styles.bottomSheet}>
-                <View style={styles.handle} />
-                <View style={[styles.sheetContent, { maxHeight: SCREEN_HEIGHT * 0.7 }]}>
-                    <Text style={styles.sheetTitle}>Voice Settings</Text>
+      {/* REFINEMENT: STABLE OVERLAY PICKER */}
+      {showOptions && (
+        <View style={styles.absoluteOverlay}>
+            <TouchableOpacity style={styles.flexOne} activeOpacity={1} onPress={() => setShowOptions(false)} />
+            <View style={styles.customBottomSheet}>
+                <View style={styles.customHandle} />
+                <View style={[styles.sheetContent, { maxHeight: SCREEN_HEIGHT * 0.75 }]}>
+                    <Text style={styles.sheetTitle}>Regenerate Options</Text>
                     <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
-                        <Text style={styles.label}>VOICE / SPEAKER</Text>
+                        <Text style={styles.label}>AI VOICE SPEAKER</Text>
                         <TouchableOpacity style={styles.pickerButton} onPress={() => openPicker('voice')}>
                             <Text style={styles.pickerText}>{selectedVoice.name}</Text>
-                            <Ionicons name="chevron-expand" size={20} color={Colors.light.primary} />
+                            <Ionicons name="chevron-forward" size={18} color={Colors.light.primary} />
+                        </TouchableOpacity>
+
+                        <Text style={styles.label}>LANGUAGE</Text>
+                        <TouchableOpacity style={styles.pickerButton} onPress={() => openPicker('language')}>
+                            <Text style={styles.pickerText}>{selectedLanguage}</Text>
+                            <Ionicons name="chevron-forward" size={18} color={Colors.light.primary} />
+                        </TouchableOpacity>
+
+                        <Text style={styles.label}>CATEGORY</Text>
+                        <TouchableOpacity style={styles.pickerButton} onPress={() => openPicker('category')}>
+                            <Text style={styles.pickerText}>{selectedCategory}</Text>
+                            <Ionicons name="chevron-forward" size={18} color={Colors.light.primary} />
                         </TouchableOpacity>
 
                         <View style={styles.sliderHeader}>
@@ -323,47 +302,64 @@ export default function GeneratingAudioScreen() {
                                 <Text style={styles.badgeTextSmall}>{summaryWords}</Text>
                             </View>
                         </View>
-                        <Slider style={styles.slider} minimumValue={100} maximumValue={800} step={50} value={summaryWords} onValueChange={setSummaryWords} minimumTrackTintColor={Colors.light.primary} thumbTintColor={Colors.light.primary} />
+                        <Slider 
+                            style={styles.slider} 
+                            minimumValue={100} 
+                            maximumValue={1000} 
+                            step={50} 
+                            value={summaryWords} 
+                            onValueChange={setSummaryWords}
+                            minimumTrackTintColor={Colors.light.primary}
+                            maximumTrackTintColor="#D3D3D3"
+                            thumbTintColor={Colors.light.primary} 
+                        />
 
                         <View style={styles.sliderHeader}>
-                            <Text style={styles.label}>PACE / SPEED</Text>
+                            <Text style={styles.label}>VOICE SPEED</Text>
                             <View style={styles.badgeSmall}>
                                 <Text style={styles.badgeTextSmall}>{voiceSpeed.toFixed(1)}x</Text>
                             </View>
                         </View>
-                        <Slider style={styles.slider} minimumValue={0.5} maximumValue={2.0} step={0.1} value={voiceSpeed} onValueChange={setVoiceSpeed} minimumTrackTintColor={Colors.light.primary} thumbTintColor={Colors.light.primary} />
+                        <Slider 
+                            style={styles.slider} 
+                            minimumValue={0.5} 
+                            maximumValue={2.0} 
+                            step={0.1} 
+                            value={voiceSpeed} 
+                            onValueChange={setVoiceSpeed}
+                            minimumTrackTintColor={Colors.light.primary}
+                            maximumTrackTintColor="#D3D3D3"
+                            thumbTintColor={Colors.light.primary} 
+                        />
 
                         <TouchableOpacity style={styles.startGenerationButton} onPress={startNewGeneration}>
                             <LinearGradient colors={Colors.light.signatureGradient} style={styles.startGenerationGradient}>
                                 <Text style={styles.startGenerationText}>Regenerate Audio ⚡</Text>
                             </LinearGradient>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.cancelButton} onPress={() => setShowOptions(false)}>
-                            <Text style={styles.cancelText}>Cancel</Text>
-                        </TouchableOpacity>
                     </ScrollView>
                 </View>
             </View>
         </View>
-      </Modal>
+      )}
 
-      {/* Sub-Picker */}
-      <Modal visible={pickerVisible} animationType="fade" transparent onRequestClose={() => setPickerVisible(false)}>
-        <View style={styles.subModalOverlay}>
+      {pickerVisible && (
+        <View style={styles.absoluteOverlayHigher}>
+            <TouchableOpacity style={styles.flexOne} activeOpacity={1} onPress={() => setPickerVisible(false)} />
             <View style={styles.subModalContent}>
                 <View style={styles.subModalHeader}>
-                    <Text style={styles.subModalTitle}>Speakers</Text>
-                    <TouchableOpacity onPress={() => setPickerVisible(false)}><Ionicons name="close" size={24} color={Colors.light.onSurface} /></TouchableOpacity>
+                    <Text style={styles.subModalTitle}>Choose {pickerType}</Text>
+                    <TouchableOpacity onPress={() => setPickerVisible(false)}><Ionicons name="close-circle" size={28} color={Colors.light.onSurfaceVariant} /></TouchableOpacity>
                 </View>
-                <FlatList data={currentPickerData} keyExtractor={(item, index) => index.toString()} renderItem={({ item }) => (
+                <FlatList data={currentPickerData} keyExtractor={(item, index) => index.toString()} showsVerticalScrollIndicator={false} style={{ maxHeight: SCREEN_HEIGHT * 0.5 }} renderItem={({ item }) => (
                     <TouchableOpacity style={styles.selectionItem} onPress={() => handleSelect(pickerType === 'voice' ? VOICES.find(v => v.name === item) : item)}>
-                        <Text style={[styles.selectionLabel, selectedVoice.name === item && styles.activeSelectionLabel]}>{item}</Text>
-                        {selectedVoice.name === item && <Ionicons name="checkmark-circle" size={20} color={Colors.light.primary} />}
+                        <Text style={[styles.selectionLabel, (selectedLanguage === item || selectedCategory === item || selectedVoice.name === item) && styles.activeSelectionLabel]}>{item}</Text>
+                        {(selectedLanguage === item || selectedCategory === item || selectedVoice.name === item) && <Ionicons name="checkmark" size={20} color={Colors.light.primary} />}
                     </TouchableOpacity>
                 )} />
             </View>
         </View>
-      </Modal>
+      )}
     </SafeAreaView>
   );
 }
@@ -402,36 +398,33 @@ const styles = StyleSheet.create({
   sectionTitle: { fontFamily: 'Inter_700Bold', fontSize: 18, color: Colors.light.onSurface, marginBottom: 16 },
   previewCard: { backgroundColor: 'white', borderRadius: 20, padding: 24, shadowColor: Colors.light.primary, shadowOpacity: 0.04, shadowRadius: 16, elevation: 2 },
   previewContent: { fontFamily: 'Inter_400Regular', fontSize: 16, color: Colors.light.onSurfaceVariant, lineHeight: 24, marginBottom: 24 },
-  processingBar: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   processingText: { fontFamily: 'Inter_400Regular', fontSize: 14, color: Colors.light.onSurfaceVariant },
   voiceScriptBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(0, 88, 188, 0.05)', paddingVertical: 4, paddingHorizontal: 10, borderRadius: 6, alignSelf: 'flex-start', marginTop: 12 },
   voiceScriptBadgeText: { fontFamily: 'Inter_700Bold', fontSize: 10, color: Colors.light.primary },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(26, 27, 31, 0.8)', justifyContent: 'flex-end' },
-  dismissOverlay: { flex: 1 },
-  bottomSheet: { backgroundColor: 'white', borderTopLeftRadius: 32, borderTopRightRadius: 32, paddingTop: 12 },
-  handle: { width: 40, height: 4, backgroundColor: '#eee', borderRadius: 2, alignSelf: 'center', marginBottom: 20 },
+  absoluteOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, justifyContent: 'flex-end' },
+  absoluteOverlayHigher: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 2000, justifyContent: 'center', alignItems: 'center', padding: 20 },
+  flexOne: { flex: 1 },
+  customBottomSheet: { backgroundColor: 'white', borderTopLeftRadius: 32, borderTopRightRadius: 32, paddingBottom: 40 },
+  customHandle: { width: 40, height: 4, backgroundColor: '#ddd', borderRadius: 2, alignSelf: 'center', marginVertical: 12 },
   sheetContent: { paddingHorizontal: 24 },
-  sheetTitle: { fontFamily: 'Inter_700Bold', fontSize: 24, color: Colors.light.onSurface, marginBottom: 32 },
-  label: { fontFamily: 'Inter_700Bold', fontSize: 12, color: Colors.light.onSurfaceVariant, marginBottom: 12, marginTop: 10 },
-  pickerButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#f5f5f5', padding: 18, borderRadius: 16, marginBottom: 24 },
-  pickerText: { fontFamily: 'Inter_400Regular', fontSize: 16, color: Colors.light.onSurface },
+  sheetTitle: { fontFamily: 'Inter_700Bold', fontSize: 22, color: '#111', marginBottom: 20 },
+  label: { fontFamily: 'Inter_700Bold', fontSize: 11, color: '#888', letterSpacing: 1, marginBottom: 8, marginTop: 8 },
+  pickerButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#f5f7fa', padding: 16, borderRadius: 14, marginBottom: 16 },
+  pickerText: { fontFamily: 'Inter_400Regular', fontSize: 15, color: '#333' },
   sliderHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
   badgeSmall: { backgroundColor: 'rgba(0, 88, 188, 0.08)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6 },
   badgeTextSmall: { fontFamily: 'Inter_700Bold', fontSize: 10, color: Colors.light.primary },
-  slider: { width: '100%', height: 40, marginBottom: 24 },
-  startGenerationButton: { shadowColor: Colors.light.primary, shadowOpacity: 0.2, shadowRadius: 32, elevation: 8, marginVertical: 20 },
+  slider: { width: '100%', height: 40 },
+  startGenerationButton: { marginTop: 24 },
   startGenerationGradient: { paddingVertical: 18, borderRadius: 16, alignItems: 'center' },
   startGenerationText: { color: 'white', fontFamily: 'Inter_700Bold', fontSize: 18 },
-  cancelButton: { alignItems: 'center', marginBottom: 20 },
-  cancelText: { fontFamily: 'Inter_700Bold', fontSize: 14, color: '#aaa' },
-  subModalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 24 },
   subModalContent: { width: '100%', backgroundColor: 'white', borderRadius: 24, padding: 24 },
   subModalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   subModalTitle: { fontFamily: 'Inter_700Bold', fontSize: 18, color: Colors.light.onSurface },
   selectionItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: '#eee' },
   selectionLabel: { fontFamily: 'Inter_400Regular', fontSize: 16, color: Colors.light.onSurface },
   activeSelectionLabel: { fontFamily: 'Inter_700Bold', color: Colors.light.primary },
-  tabBar: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 80, backgroundColor: 'rgba(250, 249, 254, 0.95)', flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', paddingBottom: 20 },
+  tabBar: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 75, backgroundColor: 'white', flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', paddingBottom: 15, borderTopWidth: 1, borderTopColor: '#f0f0f0' },
   tabItem: { alignItems: 'center' },
   tabLabel: { fontFamily: 'Inter_400Regular', fontSize: 10, marginTop: 4, color: '#aaa' },
   activeTabLabel: { fontFamily: 'Inter_700Bold', color: Colors.light.primary },

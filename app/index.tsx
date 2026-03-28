@@ -28,11 +28,14 @@ const CATEGORIES = [
   'Startup Talk', 'Productivity', 'Case Study', 'Product Review'
 ];
 
+// REFINEMENT: Real ElevenLabs Pre-made Voice IDs
 const VOICES = [
-  { id: 'aria', name: 'Aria — Warm & Friendly' },
-  { id: 'marcus', name: 'Marcus — Authoritative' },
-  { id: 'sofia', name: 'Sofia — Soft & Calm' },
-  { id: 'jake', name: 'Jake — High Energy' }
+  { id: 'pNInz6obpgDQGcFmaJgB', name: 'Adam (Deep / Narrative)' },
+  { id: '21m00T83T45QR7oViVXq', name: 'Rachel (Clear / Casual)' },
+  { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Bella (Soft / Warm)' },
+  { id: 'VR6AewrOoPST9074nu7h', name: 'Arnold (Powerful / Deep)' },
+  { id: 'AZnzlk1XhxPqc8pJ86nE', name: 'Domi (Friendly / Professional)' },
+  { id: 'ErXw9S1aaBXv59cHq9vK', name: 'Antoni (Smooth / Calm)' }
 ];
 
 export default function HomeScreen() {
@@ -187,9 +190,15 @@ export default function HomeScreen() {
                             <Text style={[styles.label, { color: Colors.light.primary }]}>{summaryWords} words</Text>
                         </View>
                         <Slider 
-                            style={styles.slider} minimumValue={100} maximumValue={800} step={50} 
-                            value={summaryWords} onValueChange={setSummaryWords}
-                            minimumTrackTintColor={Colors.light.primary} thumbTintColor={Colors.light.primary} 
+                            style={styles.slider} 
+                            minimumValue={100} 
+                            maximumValue={1000} 
+                            step={50} 
+                            value={summaryWords} 
+                            onValueChange={setSummaryWords}
+                            minimumTrackTintColor={Colors.light.primary}
+                            maximumTrackTintColor="#D3D3D3"
+                            thumbTintColor={Colors.light.primary} 
                         />
 
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 }}>
@@ -197,9 +206,15 @@ export default function HomeScreen() {
                             <Text style={[styles.label, { color: Colors.light.primary }]}>{voiceSpeed.toFixed(1)}x</Text>
                         </View>
                         <Slider 
-                            style={styles.slider} minimumValue={0.5} maximumValue={2.0} step={0.1} 
-                            value={voiceSpeed} onValueChange={setVoiceSpeed}
-                            minimumTrackTintColor={Colors.light.primary} thumbTintColor={Colors.light.primary} 
+                            style={styles.slider} 
+                            minimumValue={0.5} 
+                            maximumValue={2.0} 
+                            step={0.1} 
+                            value={voiceSpeed} 
+                            onValueChange={setVoiceSpeed}
+                            minimumTrackTintColor={Colors.light.primary}
+                            maximumTrackTintColor="#D3D3D3"
+                            thumbTintColor={Colors.light.primary} 
                         />
 
                         <TouchableOpacity 
