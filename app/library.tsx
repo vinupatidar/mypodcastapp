@@ -1,54 +1,119 @@
-import React from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, Dimensions } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, ActivityIndicator } from 'react-native';
+import { Image } from 'expo-image';
 import { Colors } from '../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { Image } from 'expo-image';
 
-const { width } = Dimensions.get('window');
+// Computer's Local IP for Physical Devices
+const API_BASE_URL = 'http://192.168.1.2:5003';
 
-const RECENT_EPISODES = [
-  { id: '1', title: 'The Future of AI Voice Synthesis', date: 'Mar 24, 2026', duration: '12:45', category: 'Tech' },
-  { id: '2', title: 'Why Reading Novels Still Matters', date: 'Mar 22, 2026', duration: '08:32', category: 'Story Telling' },
-  { id: '3', title: 'Morning News Roundup', date: 'Mar 21, 2026', duration: '05:15', category: 'News' },
-  { id: '4', title: 'Deep Work: My Summary', date: 'Mar 18, 2026', duration: '15:20', category: 'Educational' },
-  { id: '5', title: 'Exploring New Frontiers', date: 'Mar 15, 2026', duration: '22:10', category: 'Travel' },
-  { id: '6', title: 'Science Weekly: Physics', date: 'Mar 12, 2026', duration: '18:12', category: 'Science' },
-];
-
+/**
+ * Library Screen for MyPodcast App
+ * Now fetches real saved episodes from the backend DB.
+ */
 export default function LibraryScreen() {
+  const [episodes, setEpisodes] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+     fetchEpisodes();
+  }, []);
+
+  const fetchEpisodes = async () => {
+    try {
+        setLoading(true);
+        const response = await fetch(`${API_BASE_URL}/episodes`);
+        const result = await response.json();
+        if (result.success) {
+            // Sort by latest first
+            setEpisodes(result.data.reverse());
+        }
+    } catch (err) {
+        console.error('Fetch Library Error:', err);
+    } finally {
+        setLoading(false);
+    }
+  };
+
+  const handleOpenEpisode = (episode: any) => {
+    // Navigate to the player with the already generated summary and audioUrl
+    router.push({
+        pathname: '/generating-audio',
+        params: {
+            summary: episode.summary,
+            audioUrl: episode.audioUrl,
+            category: episode.category,
+            title: episode.title
+        }
+    });
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Header Section */}
-        <View style={styles.header}>
-          <Text style={styles.title}>Your Library</Text>
-          <Text style={styles.subtitle}>All your generated summaries in one place.</Text>
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.headerWelcomeLabel}>YOUR COLLECTION</Text>
+          <Text style={styles.userNameTitle}>Library</Text>
         </View>
+        <TouchableOpacity style={styles.profileButton}>
+          <Image 
+            source="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=100" 
+            style={styles.profileImage}
+          />
+        </TouchableOpacity>
+      </View>
 
-        {/* Podcast List */}
-        <View style={styles.listContainer}>
-          {RECENT_EPISODES.map((item) => (
-            <TouchableOpacity 
-                key={item.id} 
-                style={styles.episodeCard} 
-                onPress={() => router.push('/generating-audio')}
-            >
-              <View style={styles.episodeIcon}>
-                <Ionicons name="play" size={20} color={Colors.light.primary} />
-              </View>
-              <View style={styles.episodeInfo}>
-                <Text style={styles.episodeCategory}>{item.category.toUpperCase()}</Text>
-                <Text style={styles.episodeTitle} numberOfLines={1}>{item.title}</Text>
-                <Text style={styles.episodeMeta}>{item.date} • {item.duration}</Text>
-              </View>
-              <Ionicons name="ellipsis-vertical" size={20} color={Colors.light.onSurfaceVariant} />
-            </TouchableOpacity>
-          ))}
-        </View>
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>Recent Episodes</Text>
+        <TouchableOpacity onPress={fetchEpisodes}>
+             <Ionicons name="refresh" size={18} color={Colors.light.primary} />
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        {loading ? (
+            <View style={{ marginTop: 100 }}>
+                <ActivityIndicator size="large" color={Colors.light.primary} />
+                <Text style={styles.loadingText}>Loading your collection...</Text>
+            </View>
+        ) : (
+            episodes.length === 0 ? (
+                <View style={styles.emptyContainer}>
+                    <Ionicons name="mic-off" size={64} color={Colors.light.surfaceContainerHigh} />
+                    <Text style={styles.emptyTitle}>No Podcasts Yet</Text>
+                    <Text style={styles.emptyDescription}>Generate your first AI podcast from the Home screen!</Text>
+                </View>
+            ) : (
+                episodes.map((episode) => (
+                    <TouchableOpacity 
+                        key={episode.id} 
+                        style={styles.episodeCard}
+                        onPress={() => handleOpenEpisode(episode)}
+                    >
+                        <View style={styles.episodeInfo}>
+                            <View style={styles.categoryLabel}>
+                                <Text style={styles.categoryText}>{episode.category.toUpperCase()}</Text>
+                            </View>
+                            <Text style={styles.episodeTitle}>{episode.title}</Text>
+                            <Text style={styles.episodeSummary} numberOfLines={2}>
+                                {episode.summary}
+                            </Text>
+                            <View style={styles.timestampContainer}>
+                                <Ionicons name="time-outline" size={14} color={Colors.light.onSurfaceVariant} />
+                                <Text style={styles.timestampText}>{new Date(episode.timestamp).toLocaleDateString()}</Text>
+                            </View>
+                        </View>
+                        <View style={styles.playButtonMini}>
+                            <Ionicons name="play" size={20} color="white" />
+                        </View>
+                    </TouchableOpacity>
+                ))
+            )
+        )}
       </ScrollView>
 
-      {/* Bottom Navigation */}
+      {/* Persistent Bottom Tab Bar */}
       <View style={styles.tabBar}>
           <TabItem icon="home" label="HOME" route="/" />
           <TabItem icon="mic" label="LIBRARY" active />
@@ -84,64 +149,141 @@ const styles = StyleSheet.create({
     paddingBottom: 110,
   },
   header: {
-    marginBottom: 32,
-    marginTop: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 10,
+    marginBottom: 40,
   },
-  title: {
+  headerWelcomeLabel: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 32,
-    color: Colors.light.onSurface,
+    fontSize: 10,
+    color: Colors.light.onSurfaceVariant,
+    letterSpacing: 2,
     marginBottom: 8,
   },
-  subtitle: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 16,
-    color: Colors.light.onSurfaceVariant,
+  userNameTitle: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 28,
+    color: Colors.light.onSurface,
   },
-  listContainer: {
-    gap: 12,
+  profileButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: 'white',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  profileImage: {
+    width: '100%',
+    height: '100%',
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 20,
+    color: Colors.light.onSurface,
+  },
+  categoryLabel: {
+    backgroundColor: 'rgba(0, 88, 188, 0.08)',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+    marginBottom: 12,
+  },
+  categoryText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 10,
+    color: Colors.light.primary,
+    letterSpacing: 0.8,
   },
   episodeCard: {
+    backgroundColor: 'white',
+    borderRadius: 24,
+    padding: 20,
+    marginBottom: 20,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'white',
-    padding: 16,
-    borderRadius: 20,
     shadowColor: Colors.light.primary,
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.04,
-    shadowRadius: 8,
+    shadowRadius: 16,
     elevation: 2,
-  },
-  episodeIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: 'rgba(0, 88, 188, 0.05)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
   },
   episodeInfo: {
     flex: 1,
   },
-  episodeCategory: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 10,
-    color: Colors.light.primary,
-    letterSpacing: 0.5,
-    marginBottom: 4,
-  },
   episodeTitle: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 16,
+    fontSize: 18,
     color: Colors.light.onSurface,
-    marginBottom: 2,
+    marginBottom: 8,
   },
-  episodeMeta: {
+  episodeSummary: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 14,
+    color: Colors.light.onSurfaceVariant,
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  timestampContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  timestampText: {
     fontFamily: 'Inter_400Regular',
     fontSize: 12,
     color: Colors.light.onSurfaceVariant,
+  },
+  playButtonMini: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.light.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 16,
+  },
+  loadingText: {
+      fontFamily: 'Inter_400Regular',
+      fontSize: 14,
+      color: Colors.light.onSurfaceVariant,
+      textAlign: 'center',
+      marginTop: 16,
+  },
+  emptyContainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: 80,
+  },
+  emptyTitle: {
+      fontFamily: 'Inter_700Bold',
+      fontSize: 18,
+      color: Colors.light.onSurface,
+      marginTop: 20,
+  },
+  emptyDescription: {
+      fontFamily: 'Inter_400Regular',
+      fontSize: 14,
+      color: Colors.light.onSurfaceVariant,
+      textAlign: 'center',
+      marginTop: 8,
+      paddingHorizontal: 40,
   },
   tabBar: {
     position: 'absolute',
@@ -160,12 +302,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   tabLabel: {
-    fontFamily: 'Inter_700Bold',
+    fontFamily: 'Inter_400Regular',
     fontSize: 10,
     marginTop: 4,
     color: Colors.light.onSurfaceVariant,
   },
   activeTabLabel: {
+    fontFamily: 'Inter_700Bold',
     color: Colors.light.primary,
   },
 });

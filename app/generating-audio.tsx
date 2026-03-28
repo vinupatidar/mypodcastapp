@@ -68,9 +68,18 @@ export default function GeneratingAudioScreen() {
   const [pickerType, setPickerType] = useState<'language' | 'category' | 'voice'>('language');
 
   useEffect(() => {
-    generateContent();
+    if (params.audioUrl && params.summary) {
+        // Pre-loaded from Library
+        setSummary(params.summary as string);
+        setAudioUrl(params.audioUrl as string);
+        playAudio(params.audioUrl as string);
+        setIsGenerating(false);
+    } else {
+        // New generation
+        generateContent();
+    }
+    
     return () => {
-        // Cleanup sound when leaving
         if (soundRef.current) {
             soundRef.current.unloadAsync();
         }
