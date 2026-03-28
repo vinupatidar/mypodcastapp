@@ -26,15 +26,6 @@ const PAYWALL_PLANS = [
         icon: 'car-outline',
         gradient: ['#fbbf24', '#f59e0b'],
         features: ['20 AI Podcast Generations', 'Full Library History Access']
-    },
-    {
-        id: 'enterprise',
-        name: 'Enterprise',
-        price: '$100',
-        period: '/Mon',
-        icon: 'rocket-outline',
-        gradient: ['#f87171', '#ef4444'],
-        features: ['Unlimited Podcast Generations', 'Dedicated Support', 'Custom Voice ID']
     }
 ];
 
