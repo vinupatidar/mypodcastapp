@@ -194,16 +194,11 @@ export default function GeneratingAudioScreen() {
       <View style={styles.container}>
         <View style={styles.navHeader}>
           <TouchableOpacity onPress={() => router.replace('/')} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color={Colors.light.primary} />
-            <Text style={{ marginLeft: 8, color: Colors.light.primary, fontFamily: 'Inter_700Bold' }}>HOME</Text>
+            <Ionicons name="arrow-back" size={20} color={Colors.light.primary} />
+            <Text style={styles.homeButtonText}>HOME</Text>
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Podcasting...</Text>
-          <TouchableOpacity style={styles.profileButtonMini}>
-            <Image 
-              source="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=100" 
-              style={styles.profileImage}
-            />
-          </TouchableOpacity>
+          <View style={{ width: 60 }} />
         </View>
 
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -384,11 +379,10 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   scrollContent: { paddingBottom: 120 },
   content: { paddingHorizontal: 24, alignItems: 'center' },
-  navHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 12 },
-  backButton: { padding: 8 },
-  headerTitle: { fontFamily: 'Inter_700Bold', fontSize: 20, color: Colors.light.onSurface },
-  profileButtonMini: { width: 32, height: 32, borderRadius: 16, overflow: 'hidden' },
-  profileImage: { width: '100%', height: '100%' },
+  navHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.03)' },
+  backButton: { flexDirection: 'row', alignItems: 'center', padding: 8 },
+  homeButtonText: { marginLeft: 6, color: Colors.light.primary, fontFamily: 'Inter_700Bold', fontSize: 12, letterSpacing: 0.5 },
+  headerTitle: { fontFamily: 'Inter_700Bold', fontSize: 18, color: Colors.light.onSurface },
   badge: { backgroundColor: 'rgba(0, 88, 188, 0.1)', paddingVertical: 8, paddingHorizontal: 20, borderRadius: 20, marginTop: 20, marginBottom: 40 },
   badgeText: { fontFamily: 'Inter_700Bold', fontSize: 12, color: '#0058bc', letterSpacing: 1.2 },
   vizWrapper: { width: SCREEN_WIDTH * 0.8, height: SCREEN_WIDTH * 0.8, justifyContent: 'center', alignItems: 'center', marginBottom: 24 },
