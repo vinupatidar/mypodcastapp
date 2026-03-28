@@ -58,6 +58,7 @@ export default function HomeScreen() {
   
   // Data States
   const [selectedVoice, setSelectedVoice] = useState(VOICES[0]);
+  const [isConfirmed, setIsConfirmed] = useState(false);
   const [summaryWords, setSummaryWords] = useState(500);
   const [voiceSpeed, setVoiceSpeed] = useState(1.0);
   const [selectedLanguage, setSelectedLanguage] = useState('Hindi');
@@ -249,25 +250,33 @@ export default function HomeScreen() {
                 onChangeText={setText}
               />
             </View>
+            
+            <TouchableOpacity 
+                style={styles.confirmationRow} 
+                onPress={() => setIsConfirmed(!isConfirmed)}
+                activeOpacity={0.8}
+            >
+                <View style={[styles.checkbox, isConfirmed && styles.checkboxActive]}>
+                    {isConfirmed && <Ionicons name="checkmark" size={14} color="white" />}
+                </View>
+                <Text style={styles.confirmationText}>
+                    Please provide enough text or file data to summarize it properly and avoid wasting your generation credits. I confirm that I've provided sufficient details.
+                </Text>
+            </TouchableOpacity>
 
             <TouchableOpacity 
                 style={styles.generateButtonContainer} 
                 onPress={() => {
-                   const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
-                   if (wordCount > 1000) {
-                       Alert.alert('Too many words', 'Please reduce your text to under 1000 words.');
-                       return;
-                   }
-                   if (!text.trim() && !selectedFile) {
-                       Alert.alert('Missing content', 'Please upload a file or paste some text first.');
-                       return;
-                   }
-                   setShowOptions(true);
+                    if (!isConfirmed) {
+                        Alert.alert('Confirmation Required', 'Please confirm that you have provided enough details before generating.');
+                        return;
+                    }
+                    setShowOptions(true);
                 }}
                 activeOpacity={0.8}
             >
                 <LinearGradient
-                    colors={Colors.light.signatureGradient}
+                    colors={isConfirmed ? Colors.light.signatureGradient : ['#ccc', '#ddd']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={styles.generateButton}
@@ -430,6 +439,12 @@ const styles = StyleSheet.create({
   dividerText: { fontFamily: 'Inter_700Bold', fontSize: 10, color: '#bbb', marginHorizontal: 16, letterSpacing: 1 },
   textInputContainer: { backgroundColor: 'white', borderRadius: 20, padding: 16, height: 140, marginBottom: 24, elevation: 1 },
   textInput: { fontFamily: 'Inter_400Regular', fontSize: 15, color: Colors.light.onSurface, flex: 1, textAlignVertical: 'top' },
+  
+  confirmationRow: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 20, paddingHorizontal: 4 },
+  checkbox: { width: 20, height: 20, borderRadius: 6, borderWidth: 2, borderColor: '#3b82f6', marginRight: 12, marginTop: 2, justifyContent: 'center', alignItems: 'center' },
+  checkboxActive: { backgroundColor: '#3b82f6' },
+  confirmationText: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 12, color: '#666', lineHeight: 18 },
+
   generateButtonContainer: { elevation: 5, marginBottom: 40 },
   generateButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 18, borderRadius: 24 },
   generateButtonText: { color: 'white', fontFamily: 'Inter_700Bold', fontSize: 18 },
