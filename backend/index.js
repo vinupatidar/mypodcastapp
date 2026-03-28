@@ -20,7 +20,7 @@ const openai = new OpenAI({
 });
 
 // ElevenLabs Configuration
-const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
+const ELEVENLABS_API_KEY = (process.env.ELEVENLABS_API_KEY || '').trim();
 const ELEVEN_VOICE_ID = "21m00Tcm4TlvDq8ikWAM"; // Rachel - Default Voice
 
 app.use(cors());
@@ -91,8 +91,17 @@ async function generateElevenLabsTTS(text, filename) {
     });
   } catch (error) {
     if (error.response && error.response.data) {
-      // Since responseType is 'stream', error data is also a stream
-      console.error('❌ ElevenLabs API Error Status:', error.response.status);
+      // Since responseType is 'stream', error data is also a stream.
+      // We need to collect the chunks to see the actual error message.
+      let errorData = '';
+      try {
+          for await (const chunk of error.response.data) {
+              errorData += chunk.toString();
+          }
+      } catch (e) {
+          errorData = 'Could not parse error stream';
+      }
+      console.error(`❌ ElevenLabs API Error (${error.response.status}):`, errorData);
     } else {
       console.error('❌ ElevenLabs Error Message:', error.message);
     }
