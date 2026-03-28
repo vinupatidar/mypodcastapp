@@ -197,7 +197,7 @@ export default function HomeScreen() {
                             <Text style={[styles.label, { color: Colors.light.primary }]}>{voiceSpeed.toFixed(1)}x</Text>
                         </View>
                         <Slider 
-                            style={styles.slider} minimumValue={0.7} maximumValue={1.2} step={0.1} 
+                            style={styles.slider} minimumValue={0.5} maximumValue={2.0} step={0.1} 
                             value={voiceSpeed} onValueChange={setVoiceSpeed}
                             minimumTrackTintColor={Colors.light.primary} thumbTintColor={Colors.light.primary} 
                         />

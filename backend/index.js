@@ -54,8 +54,8 @@ async function generateElevenLabsTTS(text, filename, speed = 1.0) {
     return null;
   }
 
-  // Normalize speed between 0.7 and 1.2
-  const normalizedSpeed = Math.min(Math.max(speed, 0.7), 1.2);
+  // Normalize speed between 0.5 and 2.0
+  const normalizedSpeed = Math.min(Math.max(speed, 0.5), 2.0);
 
   console.log(`🎙️ Generating TTS (Speed: ${normalizedSpeed}) for text (${text.length} chars) using ElevenLabs...`);
 
