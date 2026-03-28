@@ -84,8 +84,14 @@ export default function PaywallScreen() {
             
             <View style={styles.headerBackground}>
                 <SafeAreaView>
-                        <View style={styles.topGreetingContainer}>
-                            <Text style={styles.greetingText}>Hello, {fullName}</Text>
+                        <View style={styles.topGreetingRow}>
+                            <View>
+                                <Text style={styles.greetingText}>Hello, {fullName}</Text>
+                            </View>
+                            <TouchableOpacity style={styles.headerSignOutBtn} onPress={handleSignOut}>
+                                <Text style={styles.headerSignOutText}>Sign Out</Text>
+                                <Ionicons name="log-out-outline" size={16} color="rgba(255,255,255,0.7)" />
+                            </TouchableOpacity>
                         </View>
                         <View style={styles.headerCenteredContent}>
                             <Text style={styles.choosePlanTitle}>CHOOSE YOUR PLAN</Text>
@@ -125,11 +131,6 @@ export default function PaywallScreen() {
                             </View>
                         </TouchableOpacity>
                     ))}
-
-                    <TouchableOpacity style={styles.signoutBtn} onPress={handleSignOut}>
-                        <Ionicons name="log-out-outline" size={20} color="#FF6347" />
-                        <Text style={styles.signoutText}>Sign Out</Text>
-                    </TouchableOpacity>
                     
                     <View style={{ height: 40 }} />
                 </ScrollView>
@@ -141,13 +142,35 @@ export default function PaywallScreen() {
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#103E5B' },
     headerBackground: { height: SCREEN_HEIGHT * 0.28, backgroundColor: '#103E5B' },
-    topGreetingContainer: { paddingHorizontal: 30, paddingTop: 20 },
+    topGreetingRow: { 
+        paddingHorizontal: 25, 
+        paddingTop: 20, 
+        flexDirection: 'row', 
+        justifyContent: 'space-between', 
+        alignItems: 'center' 
+    },
+    headerSignOutBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        borderRadius: 20,
+        backgroundColor: 'rgba(255,255,255,0.1)',
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.1)'
+    },
+    headerSignOutText: {
+        color: 'white',
+        fontSize: 12,
+        fontFamily: 'Inter_700Bold'
+    },
     headerCenteredContent: { alignItems: 'center', justifyContent: 'center', marginTop: 15 },
     greetingText: { color: 'rgba(255,255,255,0.9)', fontSize: 18, fontFamily: 'Inter_700Bold' },
-    choosePlanTitle: { color: 'white', fontSize: 22, fontFamily: 'Inter_700Bold' },
+    choosePlanTitle: { color: 'white', fontSize: 24, fontFamily: 'Inter_700Bold', letterSpacing: 1 },
     
     contentCard: { flex: 1, backgroundColor: 'white', borderTopLeftRadius: 40, borderTopRightRadius: 40, paddingHorizontal: 20, marginTop: -40 },
-    plansList: { paddingTop: 15 },
+    plansList: { paddingTop: 20 },
     planItem: { 
         flexDirection: 'row', 
         alignItems: 'center', 
@@ -157,23 +180,18 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
+        shadowOpacity: 0.08,
         shadowRadius: 10,
-        elevation: 4
+        elevation: 4,
+        borderWidth: 1,
+        borderColor: '#f5f5f5'
     },
-    planIconBox: { width: 70, height: 120, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
-    planInfo: { flex: 1, paddingHorizontal: 16 },
-    planItemName: { fontSize: 18, fontFamily: 'Inter_700Bold', color: '#111', marginBottom: 8 },
-    planFeatureText: { fontSize: 12, color: '#888', marginBottom: 4, fontFamily: 'Inter_400Regular' },
-    choosePlanLink: { color: '#888', fontSize: 12, marginTop: 8, fontFamily: 'Inter_400Regular', alignSelf: 'flex-end' },
-    
-    priceContainer: { alignItems: 'flex-end' },
-    priceValue: { fontSize: 24, fontFamily: 'Inter_700Bold', color: '#111' },
-    periodLabel: { fontSize: 12, color: '#888' },
-    
-    termsLink: { marginVertical: 10 },
-    termsText: { color: '#888', fontSize: 12, textAlign: 'center' },
-    
-    signoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 20, padding: 16 },
-    signoutText: { color: '#FF6347', fontFamily: 'Inter_700Bold', fontSize: 16, marginLeft: 8 },
+    planIconBox: { width: 56, height: 56, borderRadius: 18, justifyContent: 'center', alignItems: 'center' },
+    planInfo: { flex: 1, marginLeft: 16 },
+    planItemName: { fontSize: 18, fontFamily: 'Inter_700Bold', color: '#111' },
+    planFeatureText: { fontSize: 12, color: '#666', marginTop: 2, fontFamily: 'Inter_400Regular' },
+    choosePlanLink: { color: '#3b82f6', fontSize: 13, fontFamily: 'Inter_700Bold', marginTop: 10 },
+    priceContainer: { alignItems: 'flex-end', marginLeft: 10 },
+    priceValue: { fontSize: 20, fontFamily: 'Inter_700Bold', color: '#111' },
+    periodLabel: { fontSize: 11, color: '#aaa', marginTop: 2 },
 });

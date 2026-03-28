@@ -25,14 +25,14 @@ export default function AuthScreen() {
         setLoading(true);
         try {
             if (isLogin) {
-                const { error } = await supabase.auth.signInWithPassword({
+                const { data, error } = await supabase.auth.signInWithPassword({
                     email,
                     password,
                 });
                 if (error) throw error;
-                router.replace('/');
+                // router.replace('/') will be handled by onAuthStateChange in index.tsx
             } else {
-                const { error } = await supabase.auth.signUp({
+                const { data, error } = await supabase.auth.signUp({
                     email,
                     password,
                     options: {
@@ -42,8 +42,13 @@ export default function AuthScreen() {
                     }
                 });
                 if (error) throw error;
-                Alert.alert('Success', 'Account created! Please check your email for verification.');
-                setIsLogin(true);
+                
+                if (data.session) {
+                    Alert.alert('Welcome!', 'Account created successfully.');
+                } else {
+                    Alert.alert('Account Created', 'Please check your email to verify your account.');
+                    setIsLogin(true);
+                }
             }
         } catch (error: any) {
             Alert.alert('Authentication Error', error.message);
