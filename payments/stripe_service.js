@@ -65,6 +65,48 @@ const stripeService = {
       console.error('❌ Stripe: Error creating Checkout Session:', error.message);
       throw error;
     }
+  },
+
+  /**
+   * Retrieves a Stripe subscription.
+   * @param {string} subscriptionId 
+   * @returns {Promise<Object>}
+   */
+  getSubscription: async (subscriptionId) => {
+    try {
+      return await stripe.subscriptions.retrieve(subscriptionId);
+    } catch (error) {
+      console.error('❌ Stripe: Error fetching Subscription:', error.message);
+      throw error;
+    }
+  },
+
+  /**
+   * Cancels a Stripe subscription.
+   * @param {string} subscriptionId 
+   * @returns {Promise<Object>}
+   */
+  cancelSubscription: async (subscriptionId) => {
+    try {
+      return await stripe.subscriptions.cancel(subscriptionId);
+    } catch (error) {
+      console.error('❌ Stripe: Error canceling Subscription:', error.message);
+      throw error;
+    }
+  },
+
+  /**
+   * Constructs a Stripe event for webhooks (secures with signature verification).
+   * @param {any} payload - Request body
+   * @param {string} sig - Stripe signature
+   * @returns {Object} Verified Stripe Event
+   */
+  constructEvent: (payload, sig) => {
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    if (!webhookSecret) {
+        throw new Error('STRIPE_WEBHOOK_SECRET is not defined in .env');
+    }
+    return stripe.webhooks.constructEvent(payload, sig, webhookSecret);
   }
 };
 
