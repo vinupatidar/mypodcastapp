@@ -58,8 +58,8 @@ export default function GeneratingAudioScreen() {
     VOICES.find(v => v.id === params.voiceId) || VOICES[0]
   );
   // Enforce clean defaults if params are missing or zero
-  const [summaryWords, setSummaryWords] = useState(params.maxWords ? Number(params.maxWords) : 500);
-  const [voiceSpeed, setVoiceSpeed] = useState(params.speed ? Number(params.speed) : 1.0);
+  const [summaryWords, setSummaryWords] = useState<number>(params.maxWords ? parseInt(params.maxWords as string, 10) : 500);
+  const [voiceSpeed, setVoiceSpeed] = useState<number>(params.speed ? parseFloat(params.speed as string) : 1.0);
   const [selectedLanguage, setSelectedLanguage] = useState((params.language as string) || 'Hindi');
   const [selectedCategory, setSelectedCategory] = useState((params.category as string) || 'Story Telling');
 
@@ -312,7 +312,7 @@ export default function GeneratingAudioScreen() {
                             </View>
                         </View>
                         <Slider 
-                            key={`words-${summaryWords}-${showOptions}`}
+                            key={`words-slider-${showOptions}`}
                             style={styles.slider} 
                             minimumValue={100} 
                             maximumValue={1000} 
@@ -331,7 +331,7 @@ export default function GeneratingAudioScreen() {
                             </View>
                         </View>
                         <Slider 
-                            key={`speed-${voiceSpeed}-${showOptions}`}
+                            key={`speed-slider-${showOptions}`}
                             style={styles.slider} 
                             minimumValue={0.5} 
                             maximumValue={2.0} 
