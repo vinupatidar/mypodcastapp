@@ -12,7 +12,7 @@ const axios = require('axios');
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 5003;
+const port = process.env.PORT || 5004;
 
 // Setup OpenAI
 const openai = new OpenAI({
@@ -36,10 +36,10 @@ app.use('/outputs', express.static(OUTPUTS_DIR));
 // DB Persistence setup
 const DB_FILE = path.join(__dirname, 'db', 'episodes.json');
 if (!fs.existsSync(path.join(__dirname, 'db'))) {
-    fs.mkdirSync(path.join(__dirname, 'db'));
+  fs.mkdirSync(path.join(__dirname, 'db'));
 }
 if (!fs.existsSync(DB_FILE)) {
-    fs.writeFileSync(DB_FILE, JSON.stringify([]));
+  fs.writeFileSync(DB_FILE, JSON.stringify([]));
 }
 
 // Set up storage for uploaded files
@@ -50,8 +50,8 @@ const upload = multer({ dest: 'uploads/' });
  */
 async function generateElevenLabsTTS(text, filename) {
   if (!ELEVENLABS_API_KEY || ELEVENLABS_API_KEY === 'your_elevenlabs_api_key_here') {
-      console.warn("⚠️ ELEVENLABS_API_KEY is invalid or missing in .env.");
-      return null;
+    console.warn("⚠️ ELEVENLABS_API_KEY is invalid or missing in .env.");
+    return null;
   }
 
   console.log(`🎙️ Generating TTS for text (${text.length} chars) using ElevenLabs...`);
@@ -81,20 +81,20 @@ async function generateElevenLabsTTS(text, filename) {
 
     return new Promise((resolve, reject) => {
       writer.on('finish', () => {
-          console.log(`✅ TTS Generated: ${filename}`);
-          resolve(filename);
+        console.log(`✅ TTS Generated: ${filename}`);
+        resolve(filename);
       });
       writer.on('error', (err) => {
-          console.error(`❌ Stream Save Error:`, err);
-          reject(err);
+        console.error(`❌ Stream Save Error:`, err);
+        reject(err);
       });
     });
   } catch (error) {
     if (error.response && error.response.data) {
-        // Since responseType is 'stream', error data is also a stream
-        console.error('❌ ElevenLabs API Error Status:', error.response.status);
+      // Since responseType is 'stream', error data is also a stream
+      console.error('❌ ElevenLabs API Error Status:', error.response.status);
     } else {
-        console.error('❌ ElevenLabs Error Message:', error.message);
+      console.error('❌ ElevenLabs Error Message:', error.message);
     }
     return null;
   }
@@ -104,25 +104,25 @@ async function generateElevenLabsTTS(text, filename) {
  * Helper to Save Episode to local JSON DB
  */
 function saveEpisode(episode) {
-    try {
-        const episodes = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
-        episodes.push(episode);
-        fs.writeFileSync(DB_FILE, JSON.stringify(episodes, null, 2));
-    } catch (err) {
-        console.error('❌ DB Save Error:', err);
-    }
+  try {
+    const episodes = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
+    episodes.push(episode);
+    fs.writeFileSync(DB_FILE, JSON.stringify(episodes, null, 2));
+  } catch (err) {
+    console.error('❌ DB Save Error:', err);
+  }
 }
 
 /**
  * Endpoint to Get All Saved Episodes
  */
 app.get('/episodes', (req, res) => {
-    try {
-        const episodes = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
-        res.json({ success: true, data: episodes });
-    } catch (err) {
-        res.status(500).json({ success: false, error: 'Failed to fetch episodes' });
-    }
+  try {
+    const episodes = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
+    res.json({ success: true, data: episodes });
+  } catch (err) {
+    res.status(500).json({ success: false, error: 'Failed to fetch episodes' });
+  }
 });
 
 /**
@@ -134,7 +134,7 @@ app.post('/summarize', upload.single('file'), async (req, res) => {
     const text = req.body.text;
     const category = req.body.category || 'General';
     const maxWords = parseInt(req.body.maxWords, 10) || 500;
-    
+
     let contentToSummarize = text || '';
 
     // Handle file upload
@@ -144,14 +144,14 @@ app.post('/summarize', upload.single('file'), async (req, res) => {
       const fileExt = path.extname(req.file.originalname).toLowerCase();
       try {
         if (fileExt === '.pdf') {
-            const dataBuffer = fs.readFileSync(filePath);
-            const data = await pdf(dataBuffer);
-            contentToSummarize = data.text;
+          const dataBuffer = fs.readFileSync(filePath);
+          const data = await pdf(dataBuffer);
+          contentToSummarize = data.text;
         } else if (fileExt === '.docx') {
-            const data = await mammoth.extractRawText({ path: filePath });
-            contentToSummarize = data.value;
+          const data = await mammoth.extractRawText({ path: filePath });
+          contentToSummarize = data.value;
         } else if (fileExt === '.txt') {
-            contentToSummarize = fs.readFileSync(filePath, 'utf8');
+          contentToSummarize = fs.readFileSync(filePath, 'utf8');
         }
       } catch (e) {
         console.error('❌ File Parsing Error:', e);
@@ -188,31 +188,31 @@ app.post('/summarize', upload.single('file'), async (req, res) => {
     let audioUrl = null;
     let filename = `podcast_${Date.now()}.mp3`;
     const resultFile = await generateElevenLabsTTS(responseData.voice_script, filename);
-    
+
     if (resultFile) {
-        const host = req.get('host');
-        // Check if host includes localhost and user wants physical device IP
-        // Usually req.get('host') is the IP address if coming from phone
-        audioUrl = `http://${host}/outputs/${resultFile}`;
-        console.log(`🔗 Audio URL: ${audioUrl}`);
+      const host = req.get('host');
+      // Check if host includes localhost and user wants physical device IP
+      // Usually req.get('host') is the IP address if coming from phone
+      audioUrl = `http://${host}/outputs/${resultFile}`;
+      console.log(`🔗 Audio URL: ${audioUrl}`);
     } else {
-        console.warn(`⚠️ Background audio generation failed.`);
+      console.warn(`⚠️ Background audio generation failed.`);
     }
 
     // Persist Episode for Library
     const newEpisode = {
-        id: Date.now().toString(),
-        title: category + " Podcast - " + new Date().toLocaleDateString(),
-        summary: responseData.summary,
-        audioUrl: audioUrl,
-        category: category,
-        timestamp: new Date().toISOString()
+      id: Date.now().toString(),
+      title: category + " Podcast - " + new Date().toLocaleDateString(),
+      summary: responseData.summary,
+      audioUrl: audioUrl,
+      category: category,
+      timestamp: new Date().toISOString()
     };
     saveEpisode(newEpisode);
 
     res.json({
       success: true,
-      data: newEpisode 
+      data: newEpisode
     });
 
   } catch (error) {
