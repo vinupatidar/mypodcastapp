@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, Dimensions, Alert, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '../constants/Colors';
@@ -8,41 +8,32 @@ import { supabase } from '../services/supabase';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-const CREDIT_PACKS = [
-  {
-    id: 'starter',
-    name: 'Starter Pack',
-    credits: 5,
-    price: '$5.00',
-    description: 'Perfect for a few quick summaries',
-    icon: 'star-outline',
-    gradient: ['#60a5fa', '#3b82f6'] as const
-  },
-  {
-    id: 'pro',
-    name: 'Pro Pack',
-    credits: 20,
-    price: '$15.00',
-    description: 'Best for weekly podcast listeners',
-    icon: 'star',
-    gradient: ['#818cf8', '#6366f1'] as const,
-    isPopular: true
-  },
-  {
-    id: 'power',
-    name: 'Power Pack',
-    credits: 50,
-    price: '$30.00',
-    description: 'Maximum value for daily users',
-    icon: 'sparkles',
-    gradient: ['#fbbf24', '#f59e0b'] as const
-  }
-];
-
 export default function BuyCreditsScreen() {
+    const [packs, setPacks] = useState<any[]>([]);
+    const [loadingPacks, setLoadingPacks] = useState(true);
     const [loadingPack, setLoadingPack] = useState<string | null>(null);
 
-    const handlePurchase = async (pack: typeof CREDIT_PACKS[0]) => {
+    useEffect(() => {
+        fetchPacks();
+    }, []);
+
+    const fetchPacks = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('credit_packs')
+                .select('*')
+                .order('credits', { ascending: true });
+            
+            if (error) throw error;
+            if (data) setPacks(data);
+        } catch (error) {
+            console.error('Fetch Packs Error:', error);
+        } finally {
+            setLoadingPacks(false);
+        }
+    };
+
+    const handlePurchase = async (pack: any) => {
         setLoadingPack(pack.id);
         const { data: { user } } = await supabase.auth.getUser();
         
@@ -113,7 +104,10 @@ export default function BuyCreditsScreen() {
                 </View>
 
                 <View style={styles.packsContainer}>
-                    {CREDIT_PACKS.map((pack) => (
+                    {loadingPacks ? (
+                        <ActivityIndicator size="large" color={Colors.light.primary} style={{ marginTop: 40 }} />
+                    ) : (
+                        packs.map((pack) => (
                         <TouchableOpacity 
                             key={pack.id} 
                             style={[styles.packCard, pack.isPopular && styles.popularCard]}
@@ -158,7 +152,8 @@ export default function BuyCreditsScreen() {
                                 </View>
                             </LinearGradient>
                         </TouchableOpacity>
-                    ))}
+                        ))
+                    )}
                 </View>
 
                 <View style={styles.infoBox}>

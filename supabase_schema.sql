@@ -139,3 +139,29 @@ begin
   where user_id = x_user_id and remaining_credits > 0;
 end;
 $$ language plpgsql security definer;
+
+-- 10. Credit Packs Table
+create table public.credit_packs (
+  id uuid default gen_random_uuid() primary key,
+  name text not null,
+  credits integer not null,
+  price text not null,
+  description text,
+  icon text not null,
+  gradient text[] not null,
+  is_popular boolean default false,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Enable RLS
+alter table public.credit_packs enable row level security;
+
+-- Policies
+create policy "Credit packs are viewable by everyone." on credit_packs for select using (true);
+
+-- Initial Credit Packs
+insert into public.credit_packs (name, credits, price, description, icon, gradient, is_popular)
+values 
+  ('Starter Pack', 5, '$5.00', 'Perfect for a few quick summaries', 'star-outline', array['#60a5fa', '#3b82f6'], false),
+  ('Pro Pack', 20, '$15.00', 'Best for weekly podcast listeners', 'star', array['#818cf8', '#6366f1'], true),
+  ('Power Pack', 50, '$30.00', 'Maximum value for daily users', 'sparkles', array['#fbbf24', '#f59e0b'], false);
