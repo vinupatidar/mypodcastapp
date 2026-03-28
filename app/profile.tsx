@@ -64,7 +64,7 @@ export default function ProfileScreen() {
                     >
                         <View style={styles.planInfo}>
                             <View style={styles.planIconCircle}>
-                                <Ionicons name="crown" size={24} color="white" />
+                                <Ionicons name="star" size={24} color="white" />
                             </View>
                             <View>
                                 <Text style={styles.planBadge}>ACTIVE PLAN</Text>
