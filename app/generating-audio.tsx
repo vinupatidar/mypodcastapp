@@ -88,6 +88,7 @@ export default function GeneratingAudioScreen() {
 
   const generateContent = async () => {
     setIsGenerating(true);
+    setSummary(''); // Clear stale summary
     setAudioUrl(null);
     setIsPlaying(false);
     
@@ -106,6 +107,7 @@ export default function GeneratingAudioScreen() {
       formData.append('maxWords', summaryWords.toString());
       formData.append('speed', voiceSpeed.toString());
 
+      console.log('📡 Sending request to backend with speed:', voiceSpeed);
       const response = await fetch(`${API_BASE_URL}/summarize`, {
         method: 'POST',
         headers: { 'Accept': 'application/json' },
@@ -113,6 +115,7 @@ export default function GeneratingAudioScreen() {
       });
 
       const result = await response.json();
+      console.log('📥 Backend Response Summary:', result.data?.summary?.substring(0, 50) + '...');
       if (result.success) {
         setSummary(result.data.summary);
         if (result.data.audioUrl) {
