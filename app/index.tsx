@@ -304,6 +304,18 @@ export default function HomeScreen() {
             <TouchableOpacity 
                 style={styles.generateButtonContainer} 
                 onPress={() => {
+                    if (remainingCredits <= 0) {
+                        Alert.alert(
+                            'Out of Credits', 
+                            'You are out of credits as per your plan. Want to buy more? Click on the credit icon or upgrade your plan for more generations.',
+                            [
+                                { text: 'Later', style: 'cancel' },
+                                { text: 'Upgrade', onPress: () => router.push('/profile') }
+                            ]
+                        );
+                        return;
+                    }
+
                     const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
                     if (wordCount > 1000) {
                         Alert.alert('Too many words', 'Please reduce your text to under 1000 words.');

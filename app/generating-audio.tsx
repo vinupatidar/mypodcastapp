@@ -85,6 +85,26 @@ export default function GeneratingAudioScreen() {
   }, []);
 
   const generateContent = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // Check credits again before starting
+    const { data: sub } = await supabase.from('user_subscriptions').select('remaining_credits').eq('user_id', user.id).eq('status', 'active').maybeSingle();
+    if (sub && sub.remaining_credits <= 0) {
+        Alert.alert(
+            'Out of Credits', 
+            'You are out of credits as per your plan. Want to buy more? Click on the credit icon or upgrade your plan for more generations.',
+            [
+                { text: 'Later', style: 'cancel', onPress: () => router.back() },
+                { text: 'Upgrade', onPress: () => {
+                    router.back();
+                    router.push('/profile');
+                }}
+            ]
+        );
+        return;
+    }
+
     setIsGenerating(true);
     setSummary(''); 
     setAudioUrl(null);
@@ -198,8 +218,30 @@ export default function GeneratingAudioScreen() {
       }
   };
 
-  const startNewGeneration = () => {
+  const startNewGeneration = async () => {
     setShowOptions(false);
+    
+    // 1. Initial Credit Check
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    
+    const { data: sub } = await supabase.from('user_subscriptions').select('remaining_credits').eq('user_id', user.id).eq('status', 'active').maybeSingle();
+    
+    if (sub && sub.remaining_credits <= 0) {
+        Alert.alert(
+            'Out of Credits', 
+            'You are out of credits as per your plan. Want to buy more? Click on the credit icon or upgrade your plan for more generations.',
+            [
+                { text: 'Later', style: 'cancel' },
+                { text: 'Upgrade', onPress: () => {
+                    router.back();
+                    router.push('/profile');
+                }}
+            ]
+        );
+        return;
+    }
+    
     generateContent();
   };
 
