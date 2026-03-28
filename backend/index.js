@@ -12,7 +12,7 @@ const axios = require('axios');
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 5006;
+const port = parseInt(process.env.PORT, 10) || 5010;
 
 // Setup OpenAI
 const openai = new OpenAI({
@@ -235,6 +235,23 @@ app.post('/summarize', upload.single('file'), async (req, res) => {
 
 app.get('/health', (req, res) => res.json({ status: 'OK' }));
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`🚀 Backend listening at http://localhost:${port}`);
 });
+
+// GRACEFUL SHUTDOWN (Fixed Port issue)
+const shutdown = () => {
+    console.log('🛑 Shutting down server gracefully...');
+    server.close(() => {
+        console.log('✅ Server closed. Port released.');
+        process.exit(0);
+    });
+    // Force exit after 3 seconds if not closed
+    setTimeout(() => {
+        console.warn('⚠️ Forcefully shutting down.');
+        process.exit(1);
+    }, 3000);
+};
+
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
