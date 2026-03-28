@@ -11,7 +11,7 @@ import { Audio } from 'expo-av';
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
 
 // Computer's Local IP for Physical Devices (updated via earlier task)
-const API_BASE_URL = 'http://192.168.1.2:5004';
+const API_BASE_URL = 'http://192.168.1.2:5005';
 
 const LANGUAGES = [
   'English (US)', 'English (UK)', 'Hindi', 'Spanish', 'French', 'German', 'Chinese (Mandarin)', 

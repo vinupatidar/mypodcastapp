@@ -21,7 +21,7 @@ const openai = new OpenAI({
 
 // ElevenLabs Configuration
 const ELEVENLABS_API_KEY = (process.env.ELEVENLABS_API_KEY || '').trim();
-const ELEVEN_VOICE_ID = "21m00Tcm4TlvDq8ikWAM"; // Rachel - Default Voice
+const ELEVEN_VOICE_ID = "alFofuDn3cOwyoz1i44T"; // Rachel - Default Voice
 
 app.use(cors());
 app.use(express.json());
@@ -95,11 +95,11 @@ async function generateElevenLabsTTS(text, filename) {
       // We need to collect the chunks to see the actual error message.
       let errorData = '';
       try {
-          for await (const chunk of error.response.data) {
-              errorData += chunk.toString();
-          }
+        for await (const chunk of error.response.data) {
+          errorData += chunk.toString();
+        }
       } catch (e) {
-          errorData = 'Could not parse error stream';
+        errorData = 'Could not parse error stream';
       }
       console.error(`❌ ElevenLabs API Error (${error.response.status}):`, errorData);
     } else {
